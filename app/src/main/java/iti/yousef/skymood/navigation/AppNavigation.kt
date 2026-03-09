@@ -63,18 +63,18 @@ public fun AppNavigation(settingsDataStore: SettingsDataStore) {
 
         // Home screen with weather data
         composable<HomeRoute> {
-            //TODO : home screen
+            HomeScreen()
         }
 
         // Placeholder destinations for future screens
         composable<FavoritesRoute> {
-            // TODO: Favorites screen
+            // TODO: Implement Favorites screen
         }
         composable<AlertsRoute> {
-            // TODO:  Alerts screen
+            // TODO: Implement Alerts screen
         }
         composable<SettingsRoute> {
-            // TODO:  Settings screen
+            // TODO: Implement Settings screen
         }
     }
 }
