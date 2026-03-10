@@ -1,5 +1,8 @@
 package iti.yousef.skymood.ui.home
 
+import android.Manifest
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -135,6 +138,18 @@ private fun LoadingView() {
  */
 @Composable
 private fun ErrorView(message: String, onRetry: () -> Unit) {
+    var locationGranted by remember { mutableStateOf(false) }
+
+    // Permission launcher
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        locationGranted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
+                permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+        if (locationGranted) {
+            onRetry()
+        }
+    }
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -171,7 +186,18 @@ private fun ErrorView(message: String, onRetry: () -> Unit) {
             )
             Spacer(modifier = Modifier.height(24.dp))
             ElevatedButton(
-                onClick = onRetry,
+                onClick = {
+                    if (locationGranted) {
+                        onRetry()
+                    } else {
+                        permissionLauncher.launch(
+                            arrayOf(
+                                Manifest.permission.ACCESS_FINE_LOCATION,
+                                Manifest.permission.ACCESS_COARSE_LOCATION
+                            )
+                        )
+                    }
+                },
                 colors = ButtonDefaults.elevatedButtonColors(
                     containerColor = Color.White.copy(alpha = 0.2f),
                     contentColor = Color.White

@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.util.Log
 import androidx.annotation.RequiresPermission
 import com.google.gson.Gson
 import iti.yousef.skymood.data.local.ForecastEntity
@@ -19,7 +20,8 @@ class WeatherRepository(
 ) {
     private val gson = Gson()
     companion object {
-        const val API_KEY = BuildConfig.WEATHER_API_KEY
+        const val API_KEY =BuildConfig.WEATHER_API
+        const val TAG="Weather Repository TAG"
     }
 
     /**
@@ -40,6 +42,12 @@ class WeatherRepository(
 
         return if (isNetworkAvailable()) {
             try {
+                Log.d(TAG, "getForecast:   " +
+                        "                  lat = ${lat},\n" +
+                        "                    lon = ${lon},\n" +
+                        "                    units = ${units},\n" +
+                        "                    lang = ${lang},\n" +
+                        "                    appId = ${API_KEY} ")
                 // Fetch from API
                 val response = apiService.getForecast(
                     lat = lat,
@@ -48,6 +56,7 @@ class WeatherRepository(
                     lang = lang,
                     appId = API_KEY
                 )
+
                 // Cache the result
                 val json = gson.toJson(response)
                 weatherDao.insertForecast(
