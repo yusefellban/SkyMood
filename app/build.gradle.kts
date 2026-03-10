@@ -94,6 +94,7 @@ dependencies {
     implementation(libs.coil.network.okhttp)
 
     // Kotlin Serialization
+    implementation(libs.kotlinx.serialization.json)
 
 
     // Testing
@@ -104,6 +105,5 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
-    implementation(libs.kotlinx.serialization.json)
 
 }
