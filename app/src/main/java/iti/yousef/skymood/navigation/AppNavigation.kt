@@ -17,6 +17,7 @@ import androidx.navigation.compose.rememberNavController
 import iti.yousef.skymood.data.settings.SettingsDataStore
 import iti.yousef.skymood.ui.home.HomeScreen
 import iti.yousef.skymood.ui.onboarding.OnboardingScreen
+import iti.yousef.skymood.ui.settings.SettingsScreen
 import kotlinx.coroutines.launch
 
 /**
@@ -63,7 +64,9 @@ public fun AppNavigation(settingsDataStore: SettingsDataStore) {
 
         // Home screen with weather data
         composable<HomeRoute> {
-            HomeScreen()
+            HomeScreen(
+                onNavigateToSettings = { navController.navigate(SettingsRoute) }
+            )
         }
 
         // Placeholder destinations for future screens
@@ -74,7 +77,9 @@ public fun AppNavigation(settingsDataStore: SettingsDataStore) {
             // TODO: Implement Alerts screen
         }
         composable<SettingsRoute> {
-            // TODO: Implement Settings screen
+            SettingsScreen(
+                onNavigateBack = { navController.navigateUp() }
+            )
         }
     }
 }
