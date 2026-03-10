@@ -1,0 +1,45 @@
+<resources>
+    <string name="app_name">SkyMood</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_welcome_title">مرحباً بك في SkyMood</string>
+    <string name="onboarding_welcome_desc">احصل على توقعات محلية دقيقة، خلفيات طقس متحركة، وتحديثات في الوقت الفعلي.</string>
+    <string name="onboarding_realtime_title">الطقس في الوقت الفعلي</string>
+    <string name="onboarding_realtime_desc">كن على اطلاع دائم ببيانات الطقس الحية، والتوقعات كل ساعة، ونظرة عامة على 5 أيام.</string>
+    <string name="onboarding_location_title">إذن الموقع مطلوب</string>
+    <string name="onboarding_location_desc">نحتاج إلى معرفة موقعك لتوفير طقس دقيق لمنطقتك. يرجى منح الإذن.</string>
+    <string name="grant_permission">منح الإذن</string>
+    <string name="get_started">البدء</string>
+
+    <!-- Home Screen -->
+    <string name="fetching_weather">جاري إحضار الطقس...</string>
+    <string name="oops">عذراً!</string>
+    <string name="try_again">حاول مرة أخرى</string>
+    <string name="feels_like">يحس كأنه %1$d%2$s</string>
+    <string name="humidity">الرطوبة</string>
+    <string name="wind">الرياح</string>
+    <string name="pressure">الضغط</string>
+    <string name="clouds">السحب</string>
+    <string name="todays_forecast">توقعات اليوم</string>
+    <string name="five_day_forecast">توقعات 5 أيام</string>
+    <string name="unable_location">تعذر الحصول على موقعك. يرجى تمكين GPS والمحاولة مرة أخرى.</string>
+    <string name="error_occurred">حدث خطأ غير متوقع</string>
+
+    <!-- Settings Screen -->
+    <string name="settings">الإعدادات</string>
+    <string name="location">الموقع</string>
+    <string name="temperature_unit">وحدة الحرارة</string>
+    <string name="wind_speed_unit">وحدة سرعة الرياح</string>
+    <string name="language">اللغة</string>
+
+    <!-- Enums -->
+    <string name="loc_gps">GPS</string>
+    <string name="loc_map">اختر من الخريطة</string>
+    <string name="lang_english">English</string>
+    <string name="lang_arabic">العربية</string>
+    <string name="temperature_unit_celsius">م°</string>
+    <string name="temperature_unit_fahrenheit">ف°</string>
+    <string name="temperature_unit_kelvin">ك</string>
+    <string name="wind_unit_ms">م/ث</string>
+    <string name="wind_unit_mph">ميل/س</string>
+</resources>

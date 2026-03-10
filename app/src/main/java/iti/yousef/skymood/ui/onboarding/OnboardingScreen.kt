@@ -54,6 +54,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -67,8 +68,8 @@ import kotlin.random.Random
  * Data class representing a single onboarding page with its visual content.
  */
 public data class OnboardingPage(
-    val title: String,
-    val description: String,
+    val titleResId: Int,
+    val descriptionResId: Int,
     val icon: ImageVector,
     val gradientColors: List<Color>
 )
@@ -81,20 +82,20 @@ public data class OnboardingPage(
  */
 private fun getOnboardingPages() = listOf(
     OnboardingPage(
-        title = "Welcome to SkyMood",
-        description = "Your personal weather companion.\nGet accurate forecasts, hourly updates,\nand 5-day predictions at your fingertips.",
+        titleResId = iti.yousef.skymood.R.string.onboarding_welcome_title,
+        descriptionResId = iti.yousef.skymood.R.string.onboarding_welcome_desc,
         icon = Icons.Default.WbSunny,
         gradientColors = listOf(Color(0xFF1A237E), Color(0xFF0D47A1), Color(0xFF01579B))
     ),
     OnboardingPage(
-        title = "Real-Time Weather",
-        description = "Stay updated with live temperature,\nhumidity, wind speed, and pressure.\nBeautiful animations that match the sky.",
+        titleResId = iti.yousef.skymood.R.string.onboarding_realtime_title,
+        descriptionResId = iti.yousef.skymood.R.string.onboarding_realtime_desc,
         icon = Icons.Default.Cloud,
         gradientColors = listOf(Color(0xFF0D47A1), Color(0xFF1565C0), Color(0xFF42A5F5))
     ),
     OnboardingPage(
-        title = "Enable Location",
-        description = "We need your location to show\naccurate weather for where you are.\nYour data stays private and secure.",
+        titleResId = iti.yousef.skymood.R.string.onboarding_location_title,
+        descriptionResId = iti.yousef.skymood.R.string.onboarding_location_desc,
         icon = Icons.Default.LocationOn,
         gradientColors = listOf(Color(0xFF1B5E20), Color(0xFF2E7D32), Color(0xFF43A047))
     )
@@ -228,7 +229,7 @@ private fun OnboardingPageContent(
                 ) {
                     Icon(
                         imageVector = page.icon,
-                        contentDescription = page.title,
+                        contentDescription = stringResource(page.titleResId),
                         modifier = Modifier.size(72.dp),
                         tint = Color.White
                     )
@@ -237,7 +238,7 @@ private fun OnboardingPageContent(
                 Spacer(modifier = Modifier.height(48.dp))
 
                 Text(
-                    text = page.title,
+                    text = stringResource(page.titleResId),
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White,
@@ -247,7 +248,7 @@ private fun OnboardingPageContent(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
-                    text = page.description,
+                    text = stringResource(page.descriptionResId),
                     fontSize = 16.sp,
                     color = Color.White.copy(alpha = 0.85f),
                     textAlign = TextAlign.Center,
@@ -277,7 +278,7 @@ private fun OnboardingPageContent(
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "Grant Location Access",
+                                text = stringResource(iti.yousef.skymood.R.string.grant_permission),
                                 fontWeight = FontWeight.SemiBold,
                                 fontSize = 16.sp
                             )
@@ -296,7 +297,7 @@ private fun OnboardingPageContent(
                         )
                     ) {
                         Text(
-                            text = "Get Started",
+                            text = stringResource(iti.yousef.skymood.R.string.get_started),
                             fontWeight = FontWeight.Bold,
                             fontSize = 16.sp
                         )

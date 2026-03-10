@@ -32,6 +32,7 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Thermostat
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.WaterDrop
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -80,7 +81,10 @@ import java.util.TimeZone
  * Loading shimmer, Error with retry, or the full weather display.
  */
 @Composable
-fun HomeScreen(viewModel: HomeViewModel = viewModel()) {
+fun HomeScreen(
+    onNavigateToSettings: () -> Unit,
+    viewModel: HomeViewModel = viewModel()
+) {
     val weatherState by viewModel.weatherState.collectAsState()
     val settings by viewModel.settings.collectAsState()
 
@@ -95,7 +99,8 @@ fun HomeScreen(viewModel: HomeViewModel = viewModel()) {
             is WeatherUiState.Success -> WeatherContent(
                 data = state.data,
                 settings = settings,
-                onRefresh = { viewModel.fetchWeather() }
+                onRefresh = { viewModel.fetchWeather() },
+                onNavigateToSettings = onNavigateToSettings
             )
         }
     }
@@ -125,7 +130,7 @@ private fun LoadingView() {
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = "Fetching weather...",
+                text = androidx.compose.ui.res.stringResource(iti.yousef.skymood.R.string.fetching_weather),
                 color = Color.White.copy(alpha = 0.8f),
                 fontSize = 16.sp
             )
@@ -172,7 +177,7 @@ private fun ErrorView(message: String, onRetry: () -> Unit) {
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = "Oops!",
+                text = androidx.compose.ui.res.stringResource(iti.yousef.skymood.R.string.oops),
                 color = Color.White,
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold
@@ -205,7 +210,7 @@ private fun ErrorView(message: String, onRetry: () -> Unit) {
             ) {
                 Icon(Icons.Default.Refresh, contentDescription = "Retry")
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Try Again")
+                Text(androidx.compose.ui.res.stringResource(iti.yousef.skymood.R.string.try_again))
             }
         }
     }
@@ -219,7 +224,8 @@ private fun ErrorView(message: String, onRetry: () -> Unit) {
 private fun WeatherContent(
     data: ForecastResponse,
     settings: SettingsPreferences,
-    onRefresh: () -> Unit
+    onRefresh: () -> Unit,
+    onNavigateToSettings: () -> Unit
 ) {
     val currentItem = data.list.firstOrNull()
     val weatherCode = currentItem?.weather?.firstOrNull()?.id ?: 800
@@ -227,7 +233,7 @@ private fun WeatherContent(
     val isNight = icon.endsWith("n")
 
     // Determines the temperature unit symbol
-    val tempUnit = settings.temperatureUnit.displayName
+    val tempUnit = androidx.compose.ui.res.stringResource(settings.temperatureUnit.titleResId)
 
     // Animate content entrance
     var visible by remember { mutableStateOf(false) }
@@ -253,7 +259,8 @@ private fun WeatherContent(
                         currentItem = currentItem,
                         tempUnit = tempUnit,
                         icon = icon,
-                        onRefresh = onRefresh
+                        onRefresh = onRefresh,
+                        onNavigateToSettings = onNavigateToSettings
                     )
                 }
             }
@@ -310,7 +317,8 @@ private fun CurrentWeatherHeader(
     currentItem: ForecastItem?,
     tempUnit: String,
     icon: String,
-    onRefresh: () -> Unit
+    onRefresh: () -> Unit,
+    onNavigateToSettings: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -318,11 +326,18 @@ private fun CurrentWeatherHeader(
             .padding(top = 60.dp, start = 24.dp, end = 24.dp, bottom = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Refresh button row
+        // Top action buttons (Settings and Refresh)
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.End
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
+            IconButton(onClick = onNavigateToSettings) {
+                Icon(
+                    imageVector = Icons.Default.Settings,
+                    contentDescription = "Settings",
+                    tint = Color.White.copy(alpha = 0.8f)
+                )
+            }
             IconButton(onClick = onRefresh) {
                 Icon(
                     Icons.Default.Refresh,
@@ -372,9 +387,12 @@ private fun CurrentWeatherHeader(
             letterSpacing = (-2).sp
         )
 
-        // Feels like
         Text(
-            text = "Feels like ${currentItem?.main?.feelsLike?.toInt() ?: "--"}${tempUnit}",
+            text = androidx.compose.ui.res.stringResource(
+                id = iti.yousef.skymood.R.string.feels_like,
+                currentItem?.main?.feelsLike?.toInt() ?: 0,
+                tempUnit
+            ),
             fontSize = 14.sp,
             color = Color.White.copy(alpha = 0.6f)
         )
@@ -419,28 +437,28 @@ private fun WeatherDetailsRow(
     ) {
         DetailCard(
             icon = Icons.Default.WaterDrop,
-            label = "Humidity",
+            label = androidx.compose.ui.res.stringResource(iti.yousef.skymood.R.string.humidity),
             value = "${currentItem?.main?.humidity ?: "--"}%",
             modifier = Modifier.weight(1f)
         )
         Spacer(modifier = Modifier.width(8.dp))
         DetailCard(
             icon = Icons.Default.Air,
-            label = "Wind",
+            label = androidx.compose.ui.res.stringResource(iti.yousef.skymood.R.string.wind),
             value = displayWind,
             modifier = Modifier.weight(1f)
         )
         Spacer(modifier = Modifier.width(8.dp))
         DetailCard(
             icon = Icons.Default.Thermostat,
-            label = "Pressure",
+            label = androidx.compose.ui.res.stringResource(iti.yousef.skymood.R.string.pressure),
             value = "${currentItem?.main?.pressure ?: "--"} hPa",
             modifier = Modifier.weight(1f)
         )
         Spacer(modifier = Modifier.width(8.dp))
         DetailCard(
             icon = Icons.Default.Cloud,
-            label = "Clouds",
+            label = androidx.compose.ui.res.stringResource(iti.yousef.skymood.R.string.clouds),
             value = "${currentItem?.clouds?.all ?: "--"}%",
             modifier = Modifier.weight(1f)
         )
@@ -510,7 +528,7 @@ private fun HourlyForecastSection(
             .padding(top = 16.dp)
     ) {
         Text(
-            text = "Today's Forecast",
+            text = androidx.compose.ui.res.stringResource(iti.yousef.skymood.R.string.todays_forecast),
             fontSize = 18.sp,
             fontWeight = FontWeight.SemiBold,
             color = Color.White,
@@ -590,7 +608,7 @@ private fun DailyForecastSection(
             .padding(top = 16.dp, start = 16.dp, end = 16.dp)
     ) {
         Text(
-            text = "5-Day Forecast",
+            text = androidx.compose.ui.res.stringResource(iti.yousef.skymood.R.string.five_day_forecast),
             fontSize = 18.sp,
             fontWeight = FontWeight.SemiBold,
             color = Color.White,
