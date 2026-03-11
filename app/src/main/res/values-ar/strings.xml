@@ -12,7 +12,9 @@
     <string name="get_started">البدء</string>
 
     <!-- Home Screen -->
-    <string name="fetching_weather">جاري إحضار الطقس...</string>
+    <string name="fetching_weather">جاري التحميل...</string>
+    <string name="settings">الإعدادات</string>
+    <string name="favorites">المفضلة</string>
     <string name="oops">عذراً!</string>
     <string name="try_again">حاول مرة أخرى</string>
     <string name="feels_like">يحس كأنه %1$d%2$s</string>
@@ -30,7 +32,6 @@
     <string name="error_occurred">حدث خطأ غير متوقع</string>
 
     <!-- Settings Screen -->
-    <string name="settings">الإعدادات</string>
     <string name="location">الموقع</string>
     <string name="temperature_unit">وحدة الحرارة</string>
     <string name="wind_speed_unit">وحدة سرعة الرياح</string>

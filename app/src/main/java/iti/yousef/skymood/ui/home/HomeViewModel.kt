@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -39,6 +40,10 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     private val _settings = MutableStateFlow(SettingsPreferences())
     /** Observable settings for unit/language display */
     val settings: StateFlow<SettingsPreferences> = _settings.asStateFlow()
+    
+    private val _isFavorite = MutableStateFlow(false)
+    /** Whether the current city displayed is in the favorites list */
+    val isFavorite: StateFlow<Boolean> = _isFavorite.asStateFlow()
 
     init {
         // Observe settings changes and trigger weather fetch
@@ -55,6 +60,19 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                     _settings.value = prefs
                     fetchWeather()
                 }
+        }
+
+        // Observe favorites to see if current city is favorited
+        viewModelScope.launch {
+            combine(repository.getAllFavorites(), _weatherState) { favorites, state ->
+                if (state is WeatherUiState.Success) {
+                    favorites.any { it.cityName == state.data.city.name }
+                } else {
+                    false
+                }
+            }.collect { favorited ->
+                _isFavorite.value = favorited
+            }
         }
     }
 
@@ -112,6 +130,29 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
             ).await()
         } catch (e: Exception) {
             null
+        }
+    }
+
+    fun toggleFavorite() {
+        val state = _weatherState.value
+        if (state is WeatherUiState.Success) {
+            viewModelScope.launch {
+                val currentFavorites = repository.getAllFavorites().first()
+                val cityName = state.data.city.name
+                val existing = currentFavorites.find { it.cityName == cityName }
+                
+                if (existing != null) {
+                    repository.deleteFavorite(existing)
+                } else {
+                    repository.insertFavorite(
+                        iti.yousef.skymood.data.local.FavoriteLocationEntity(
+                            cityName = cityName,
+                            latitude = state.data.city.coord.lat,
+                            longitude = state.data.city.coord.lon
+                        )
+                    )
+                }
+            }
         }
     }
 }

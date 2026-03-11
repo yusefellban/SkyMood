@@ -14,7 +14,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import iti.yousef.skymood.data.settings.LocationMethod
 import iti.yousef.skymood.data.settings.SettingsDataStore
+import iti.yousef.skymood.ui.favorites.FavoritesScreen
 import iti.yousef.skymood.ui.home.HomeScreen
 import iti.yousef.skymood.ui.onboarding.OnboardingScreen
 import iti.yousef.skymood.ui.settings.SettingsScreen
@@ -65,13 +67,25 @@ public fun AppNavigation(settingsDataStore: SettingsDataStore) {
         // Home screen with weather data
         composable<HomeRoute> {
             HomeScreen(
-                onNavigateToSettings = { navController.navigate(SettingsRoute) }
+                onNavigateToSettings = { navController.navigate(SettingsRoute) },
+                onNavigateToFavorites = { navController.navigate(FavoritesRoute) }
             )
         }
 
         // Placeholder destinations for future screens
         composable<FavoritesRoute> {
-            // TODO: Implement Favorites screen
+            FavoritesScreen(
+                onNavigateBack = { navController.navigateUp() },
+                onFavoriteClick = { favorite ->
+                    scope.launch {
+                        settingsDataStore.setCustomLocation(favorite.latitude, favorite.longitude)
+                        settingsDataStore.setLocationMethod(LocationMethod.MAP)
+                        navController.navigate(HomeRoute) {
+                            popUpTo<HomeRoute> { inclusive = true }
+                        }
+                    }
+                }
+            )
         }
         composable<AlertsRoute> {
             // TODO: Implement Alerts screen

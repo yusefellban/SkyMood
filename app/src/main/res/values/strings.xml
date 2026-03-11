@@ -19,6 +19,7 @@
     <string name="humidity">Humidity</string>
     <string name="map">Map</string>
     <string name="gps">GPS</string>
+    <string name="favorites">Favorites</string>
     
     <string name="pick_location_map">Pick Location on Map</string>
     <string name="edit_location_map">Edit Location on Map</string>

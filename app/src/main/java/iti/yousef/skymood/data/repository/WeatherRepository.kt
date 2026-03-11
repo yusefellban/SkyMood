@@ -7,8 +7,10 @@ import android.net.NetworkCapabilities
 import android.util.Log
 import androidx.annotation.RequiresPermission
 import com.google.gson.Gson
+import iti.yousef.skymood.data.local.FavoriteLocationEntity
 import iti.yousef.skymood.data.local.ForecastEntity
 import iti.yousef.skymood.data.local.WeatherDao
+import kotlinx.coroutines.flow.Flow
 import iti.yousef.skymood.data.model.ForecastResponse
 import iti.yousef.skymood.data.remote.WeatherApiService
 import iti.yousef.skymood.BuildConfig
@@ -97,5 +99,16 @@ class WeatherRepository(
         val network = connectivityManager.activeNetwork ?: return false
         val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
         return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+    }
+
+    // Favorites
+    fun getAllFavorites(): Flow<List<FavoriteLocationEntity>> = weatherDao.getAllFavorites()
+
+    suspend fun insertFavorite(favorite: FavoriteLocationEntity) {
+        weatherDao.insertFavorite(favorite)
+    }
+
+    suspend fun deleteFavorite(favorite: FavoriteLocationEntity) {
+        weatherDao.deleteFavorite(favorite)
     }
 }

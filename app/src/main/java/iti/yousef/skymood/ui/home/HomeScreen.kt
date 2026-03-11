@@ -33,6 +33,9 @@ import androidx.compose.material.icons.filled.Thermostat
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.WaterDrop
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.StarBorder
+import androidx.compose.material.icons.filled.List
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -83,10 +86,12 @@ import java.util.TimeZone
 @Composable
 fun HomeScreen(
     onNavigateToSettings: () -> Unit,
+    onNavigateToFavorites: () -> Unit,
     viewModel: HomeViewModel = viewModel()
 ) {
     val weatherState by viewModel.weatherState.collectAsState()
     val settings by viewModel.settings.collectAsState()
+    val isFavorite by viewModel.isFavorite.collectAsState()
 
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -99,8 +104,11 @@ fun HomeScreen(
             is WeatherUiState.Success -> WeatherContent(
                 data = state.data,
                 settings = settings,
+                isFavorite = isFavorite,
                 onRefresh = { viewModel.fetchWeather() },
-                onNavigateToSettings = onNavigateToSettings
+                onNavigateToSettings = onNavigateToSettings,
+                onNavigateToFavorites = onNavigateToFavorites,
+                onToggleFavorite = { viewModel.toggleFavorite() }
             )
         }
     }
@@ -224,8 +232,11 @@ private fun ErrorView(message: String, onRetry: () -> Unit) {
 private fun WeatherContent(
     data: ForecastResponse,
     settings: SettingsPreferences,
+    isFavorite: Boolean,
     onRefresh: () -> Unit,
-    onNavigateToSettings: () -> Unit
+    onNavigateToSettings: () -> Unit,
+    onNavigateToFavorites: () -> Unit,
+    onToggleFavorite: () -> Unit
 ) {
     val currentItem = data.list.firstOrNull()
     val weatherCode = currentItem?.weather?.firstOrNull()?.id ?: 800
@@ -259,8 +270,11 @@ private fun WeatherContent(
                         currentItem = currentItem,
                         tempUnit = tempUnit,
                         icon = icon,
+                        isFavorite = isFavorite,
                         onRefresh = onRefresh,
-                        onNavigateToSettings = onNavigateToSettings
+                        onNavigateToSettings = onNavigateToSettings,
+                        onNavigateToFavorites = onNavigateToFavorites,
+                        onToggleFavorite = onToggleFavorite
                     )
                 }
             }
@@ -317,8 +331,11 @@ private fun CurrentWeatherHeader(
     currentItem: ForecastItem?,
     tempUnit: String,
     icon: String,
+    isFavorite: Boolean,
     onRefresh: () -> Unit,
-    onNavigateToSettings: () -> Unit
+    onNavigateToSettings: () -> Unit,
+    onNavigateToFavorites: () -> Unit,
+    onToggleFavorite: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -331,19 +348,37 @@ private fun CurrentWeatherHeader(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            IconButton(onClick = onNavigateToSettings) {
-                Icon(
-                    imageVector = Icons.Default.Settings,
-                    contentDescription = "Settings",
-                    tint = Color.White.copy(alpha = 0.8f)
-                )
+            Row {
+                IconButton(onClick = onNavigateToSettings) {
+                    Icon(
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = "Settings",
+                        tint = Color.White.copy(alpha = 0.8f)
+                    )
+                }
+                IconButton(onClick = onNavigateToFavorites) {
+                    Icon(
+                        imageVector = Icons.Default.List,
+                        contentDescription = "Favorites",
+                        tint = Color.White.copy(alpha = 0.8f)
+                    )
+                }
             }
-            IconButton(onClick = onRefresh) {
-                Icon(
-                    Icons.Default.Refresh,
-                    contentDescription = "Refresh",
-                    tint = Color.White.copy(alpha = 0.8f)
-                )
+            Row {
+                IconButton(onClick = onToggleFavorite) {
+                    Icon(
+                        imageVector = if (isFavorite) Icons.Default.Star else Icons.Default.StarBorder,
+                        contentDescription = "Favorite",
+                        tint = if (isFavorite) Color.Yellow else Color.White.copy(alpha = 0.8f)
+                    )
+                }
+                IconButton(onClick = onRefresh) {
+                    Icon(
+                        Icons.Default.Refresh,
+                        contentDescription = "Refresh",
+                        tint = Color.White.copy(alpha = 0.8f)
+                    )
+                }
             }
         }
 
