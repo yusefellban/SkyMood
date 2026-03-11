@@ -20,13 +20,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
 
-        val apiKey = project.findProperty("WEATHER_API_KEY") ?: ""
-
-        buildConfigField(
-            "String",
-            "WEATHER_API_KEY",
-            "\"$apiKey\""
-        )
+        buildConfigField("String", "WEATHER_API", "\"\"")
     }
 
     buildTypes {
@@ -88,6 +82,9 @@ dependencies {
 
     // Coroutines Play Services (for Task.await())
     implementation(libs.coroutines.play.services)
+
+    // OpenStreetMap
+    implementation(libs.osmdroid.android)
 
     // Coil (image loading)
     implementation(libs.coil.compose)
