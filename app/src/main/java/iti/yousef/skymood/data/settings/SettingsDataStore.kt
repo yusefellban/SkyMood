@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.doublePreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -24,6 +25,8 @@ class SettingsDataStore(private val context: Context) {
         private val KEY_WIND_UNIT = stringPreferencesKey("wind_unit")
         private val KEY_LANGUAGE = stringPreferencesKey("language")
         private val KEY_LOCATION_METHOD = stringPreferencesKey("location_method")
+        private val KEY_CUSTOM_LAT = doublePreferencesKey("custom_lat")
+        private val KEY_CUSTOM_LON = doublePreferencesKey("custom_lon")
         private val KEY_ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
     }
 
@@ -40,7 +43,9 @@ class SettingsDataStore(private val context: Context) {
             language = prefs[KEY_LANGUAGE]?.let { Language.valueOf(it) }
                 ?: Language.ENGLISH,
             locationMethod = prefs[KEY_LOCATION_METHOD]?.let { LocationMethod.valueOf(it) }
-                ?: LocationMethod.GPS
+                ?: LocationMethod.GPS,
+            customLat = prefs[KEY_CUSTOM_LAT],
+            customLon = prefs[KEY_CUSTOM_LON]
         )
     }
 
@@ -65,6 +70,13 @@ class SettingsDataStore(private val context: Context) {
 
     suspend fun setLocationMethod(method: LocationMethod) {
         context.dataStore.edit { it[KEY_LOCATION_METHOD] = method.name }
+    }
+
+    suspend fun setCustomLocation(lat: Double, lon: Double) {
+        context.dataStore.edit { prefs ->
+            prefs[KEY_CUSTOM_LAT] = lat
+            prefs[KEY_CUSTOM_LON] = lon
+        }
     }
 
     suspend fun setOnboardingCompleted() {

@@ -17,3 +17,5 @@ object HomeRoute
 object AlertsRoute
 @Serializable
 object SettingsRoute
+@Serializable
+object SettingsMapRoute

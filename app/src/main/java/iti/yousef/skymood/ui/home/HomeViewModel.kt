@@ -15,6 +15,8 @@ import iti.yousef.skymood.data.settings.SettingsPreferences
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
@@ -39,14 +41,21 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     val settings: StateFlow<SettingsPreferences> = _settings.asStateFlow()
 
     init {
-        // Observe settings changes
+        // Observe settings changes and trigger weather fetch
         viewModelScope.launch {
-            settingsDataStore.settingsFlow.collect { prefs ->
-                _settings.value = prefs
-            }
+            settingsDataStore.settingsFlow
+                .distinctUntilChanged { old, new ->
+                    old.temperatureUnit == new.temperatureUnit &&
+                    old.language == new.language &&
+                    old.locationMethod == new.locationMethod &&
+                    old.customLat == new.customLat &&
+                    old.customLon == new.customLon
+                }
+                .collectLatest { prefs ->
+                    _settings.value = prefs
+                    fetchWeather()
+                }
         }
-        // Fetch weather on init
-        fetchWeather()
     }
 
     @SuppressLint("MissingPermission")
@@ -55,20 +64,33 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             try {
                 val currentSettings = settingsDataStore.settingsFlow.first()
-                val location = getCurrentLocation()
-                if (location != null) {
-                    val forecast = repository.getForecast(
-                        lat = location.latitude,
-                        lon = location.longitude,
-                        units = currentSettings.temperatureUnit.apiValue,
-                        lang = currentSettings.language.apiValue,
-                    )
-                    _weatherState.value = WeatherUiState.Success(forecast)
+                val lat: Double
+                val lon: Double
+
+                if (currentSettings.locationMethod == iti.yousef.skymood.data.settings.LocationMethod.MAP &&
+                    currentSettings.customLat != null && currentSettings.customLon != null) {
+                    lat = currentSettings.customLat
+                    lon = currentSettings.customLon
                 } else {
-                    _weatherState.value = WeatherUiState.Error(
-                        "Unable to get your location. Please enable GPS and try again."
-                    )
+                    val location = getCurrentLocation()
+                    if (location != null) {
+                        lat = location.latitude
+                        lon = location.longitude
+                    } else {
+                        _weatherState.value = WeatherUiState.Error(
+                            "Unable to get your location. Please enable GPS and try again."
+                        )
+                        return@launch
+                    }
                 }
+
+                val forecast = repository.getForecast(
+                    lat = lat,
+                    lon = lon,
+                    units = currentSettings.temperatureUnit.apiValue,
+                    lang = currentSettings.language.apiValue,
+                )
+                _weatherState.value = WeatherUiState.Success(forecast)
             } catch (e: Exception) {
                 _weatherState.value = WeatherUiState.Error(
                     e.message ?: "An unexpected error occurred"

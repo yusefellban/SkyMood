@@ -49,4 +49,10 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
             settingsDataStore.setLocationMethod(method)
         }
     }
+
+    fun updateCustomLocation(lat: Double, lon: Double) {
+        viewModelScope.launch {
+            settingsDataStore.setCustomLocation(lat, lon)
+        }
+    }
 }

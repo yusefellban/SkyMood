@@ -9,7 +9,9 @@ public data class SettingsPreferences(
     val temperatureUnit: TempUnit = TempUnit.CELSIUS,
     val windSpeedUnit: WindUnit = WindUnit.METER_SEC,
     val language: Language = Language.ENGLISH,
-    val locationMethod: LocationMethod = LocationMethod.GPS
+    val locationMethod: LocationMethod = LocationMethod.GPS,
+    val customLat: Double? = null,
+    val customLon: Double? = null
 )
 
 /**

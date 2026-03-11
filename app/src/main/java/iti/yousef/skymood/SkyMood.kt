@@ -25,6 +25,7 @@ class SkyMood : Application() {
     override fun onCreate() {
         super.onCreate()
         database = WeatherDatabase.getInstance(this)
+
         repository = WeatherRepository(
             apiService = RetrofitClient.apiService,
             weatherDao = database.weatherDao(),

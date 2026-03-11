@@ -17,7 +17,11 @@
     <string name="try_again">حاول مرة أخرى</string>
     <string name="feels_like">يحس كأنه %1$d%2$s</string>
     <string name="humidity">الرطوبة</string>
-    <string name="wind">الرياح</string>
+    <string name="map">الخريطة</string>
+    <string name="gps">GPS</string>
+    
+    <string name="pick_location_map">اختر الموقع من الخريطة</string>
+    <string name="edit_location_map">تعديل الموقع على الخريطة</string>
     <string name="pressure">الضغط</string>
     <string name="clouds">السحب</string>
     <string name="todays_forecast">توقعات اليوم</string>

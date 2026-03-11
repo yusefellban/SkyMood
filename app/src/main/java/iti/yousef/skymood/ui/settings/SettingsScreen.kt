@@ -36,6 +36,7 @@ import iti.yousef.skymood.data.settings.WindUnit
 @Composable
 fun SettingsScreen(
     onNavigateBack: () -> Unit,
+    onNavigateToMap: () -> Unit,
     viewModel: SettingsViewModel = viewModel()
 ) {
     val settings by viewModel.settings.collectAsState()
@@ -80,9 +81,29 @@ fun SettingsScreen(
                     selectedOption = selectedStr,
                     onOptionSelected = { displayStr ->
                         val method = LocationMethod.entries.find { optionsStr[LocationMethod.entries.indexOf(it)] == displayStr }
-                        method?.let { viewModel.updateLocationMethod(it) }
+                        method?.let { 
+                            viewModel.updateLocationMethod(it) 
+                            if (it == LocationMethod.MAP && settings.customLat == null) {
+                                onNavigateToMap()
+                            }
+                        }
                     }
                 )
+                
+                if (settings.locationMethod == LocationMethod.MAP) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Button(
+                        onClick = onNavigateToMap, 
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = if (settings.customLat != null) 
+                                androidx.compose.ui.res.stringResource(iti.yousef.skymood.R.string.edit_location_map) 
+                            else 
+                                androidx.compose.ui.res.stringResource(iti.yousef.skymood.R.string.pick_location_map)
+                        )
+                    }
+                }
             }
 
             HorizontalDivider(color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f))

@@ -17,6 +17,11 @@
     <string name="try_again">Try Again</string>
     <string name="feels_like">Feels like %d%s</string>
     <string name="humidity">Humidity</string>
+    <string name="map">Map</string>
+    <string name="gps">GPS</string>
+    
+    <string name="pick_location_map">Pick Location on Map</string>
+    <string name="edit_location_map">Edit Location on Map</string>
     <string name="wind">Wind</string>
     <string name="pressure">Pressure</string>
     <string name="clouds">Clouds</string>

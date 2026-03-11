@@ -78,6 +78,15 @@ public fun AppNavigation(settingsDataStore: SettingsDataStore) {
         }
         composable<SettingsRoute> {
             SettingsScreen(
+                onNavigateBack = { navController.navigateUp() },
+                onNavigateToMap = { navController.navigate(SettingsMapRoute) }
+            )
+        }
+        composable<SettingsMapRoute> {
+            val parentEntry = androidx.compose.runtime.remember(it) { navController.getBackStackEntry(SettingsRoute) }
+            val viewModel: iti.yousef.skymood.ui.settings.SettingsViewModel = androidx.lifecycle.viewmodel.compose.viewModel(parentEntry)
+            iti.yousef.skymood.ui.settings.SettingsMapScreen(
+                viewModel = viewModel,
                 onNavigateBack = { navController.navigateUp() }
             )
         }
