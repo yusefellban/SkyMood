@@ -1,15 +1,13 @@
 package iti.yousef.skymood.data.repository
 
 import android.Manifest
-import android.content.Context
-import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
 import android.util.Log
 import androidx.annotation.RequiresPermission
 import com.google.gson.Gson
 import iti.yousef.skymood.data.local.FavoriteLocationEntity
 import iti.yousef.skymood.data.local.ForecastEntity
 import iti.yousef.skymood.data.local.WeatherDao
+import iti.yousef.skymood.data.utils.NetworkHandler
 import kotlinx.coroutines.flow.Flow
 import iti.yousef.skymood.data.model.ForecastResponse
 import iti.yousef.skymood.data.remote.WeatherApiService
@@ -18,7 +16,7 @@ import iti.yousef.skymood.BuildConfig
 class WeatherRepository(
     private val apiService: WeatherApiService,
     private val weatherDao: WeatherDao,
-    private val context: Context
+    private val networkHandler: NetworkHandler
 ) {
     private val gson = Gson()
     companion object {
@@ -42,7 +40,7 @@ class WeatherRepository(
 
         val locationKey = "${lat}_${lon}"
 
-        return if (isNetworkAvailable()) {
+        return if (networkHandler.isNetworkAvailable()) {
             try {
                 Log.d(TAG, "getForecast:   " +
                         "                  lat = ${lat},\n" +
@@ -89,16 +87,6 @@ class WeatherRepository(
         } catch (e: Exception) {
             null
         }
-    }
-
-
-    @RequiresPermission(Manifest.permission.ACCESS_NETWORK_STATE)
-    private fun isNetworkAvailable(): Boolean {
-        val connectivityManager =
-            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val network = connectivityManager.activeNetwork ?: return false
-        val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
-        return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
     }
 
     // Favorites

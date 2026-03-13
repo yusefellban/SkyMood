@@ -5,6 +5,7 @@ import iti.yousef.skymood.data.local.WeatherDatabase
 import iti.yousef.skymood.data.remote.RetrofitClient
 import iti.yousef.skymood.data.repository.WeatherRepository
 import iti.yousef.skymood.data.settings.SettingsDataStore
+import iti.yousef.skymood.data.utils.AndroidNetworkHandler
 
 /**
  * Application class that initializes app-wide singletons:
@@ -29,7 +30,7 @@ class SkyMood : Application() {
         repository = WeatherRepository(
             apiService = RetrofitClient.apiService,
             weatherDao = database.weatherDao(),
-            context = this
+            networkHandler = AndroidNetworkHandler(this)
         )
         settingsDataStore = SettingsDataStore(this)
     }
