@@ -4,8 +4,10 @@ import io.mockk.*
 import iti.yousef.skymood.data.local.ForecastEntity
 import iti.yousef.skymood.data.local.WeatherDao
 import iti.yousef.skymood.data.model.*
-import iti.yousef.skymood.data.remote.WeatherApiService
+import iti.yousef.skymood.data.remote.WeatherRemoteDataSource
 import iti.yousef.skymood.data.utils.NetworkHandler
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.After
@@ -18,7 +20,7 @@ import kotlinx.coroutines.flow.flowOf
 
 class WeatherRepositoryTest {
 
-    private lateinit var apiService: WeatherApiService
+    private lateinit var remoteDataSource: WeatherRemoteDataSource
     private lateinit var weatherDao: WeatherDao
     private lateinit var networkHandler: NetworkHandler
     private lateinit var repository: WeatherRepository
@@ -56,10 +58,10 @@ class WeatherRepositoryTest {
         every { Log.d(any(), any()) } returns 0
         every { Log.e(any(), any()) } returns 0
         
-        apiService = mockk()
+        remoteDataSource = mockk()
         weatherDao = mockk()
         networkHandler = mockk()
-        repository = WeatherRepository(apiService, weatherDao, networkHandler)
+        repository = WeatherRepository(remoteDataSource, weatherDao, networkHandler)
     }
 
     @After
@@ -68,77 +70,73 @@ class WeatherRepositoryTest {
     }
 
     @Test
-    fun `getForecast when online should fetch from API and cache data`() = runTest {
+    fun `getForecast when online should fetch from remote and cache data`() = runTest {
         // Given
         every { networkHandler.isNetworkAvailable() } returns true
-        coEvery { apiService.getForecast(any(), any(), any(), any(), any()) } returns mockForecast
+        every { remoteDataSource.getForecast(any(), any(), any(), any(), any()) } returns flowOf(mockForecast)
         coEvery { weatherDao.insertForecast(any()) } just Runs
 
-        // When
-        val result = repository.getForecast(lat, lon)
-
-        // Then
-        if (mockForecast != result) {
-            println("MISMATCH: Expected $mockForecast\nActual $result")
+        // When & Then
+        repository.getForecast(lat, lon).test {
+            assertEquals(mockForecast, awaitItem())
+            awaitComplete()
         }
-        assertEquals(mockForecast, result)
-        coVerify { apiService.getForecast(lat, lon, any(), any(), any()) }
+        
+        verify { remoteDataSource.getForecast(lat, lon, any(), any(), any()) }
         coVerify { weatherDao.insertForecast(any()) }
     }
 
     @Test
     fun `getForecast when offline should return cached data`() = runTest {
         // Given
-        val cachedJson = "mock_json"
-        val cachedEntity = ForecastEntity(locationKey, cachedJson, System.currentTimeMillis())
-        
         every { networkHandler.isNetworkAvailable() } returns false
-        coEvery { weatherDao.getForecast(locationKey) } returns cachedEntity
         
-        // Mock GSON behavior isn't needed if we mock the repo internal helper or just let it run
-        // But since we are testing the repo, it will try to deserialize the "mock_json" which will fail
-        // Let's use a real JSON for valid testing
         val gson = com.google.gson.Gson()
         val realJson = gson.toJson(mockForecast)
         val realEntity = ForecastEntity(locationKey, realJson, System.currentTimeMillis())
         coEvery { weatherDao.getForecast(locationKey) } returns realEntity
 
-        // When
-        val result = repository.getForecast(lat, lon)
+        // When & Then
+        repository.getForecast(lat, lon).test {
+            assertEquals(mockForecast, awaitItem())
+            awaitComplete()
+        }
 
-        // Then
-        assertEquals(mockForecast, result)
-        coVerify(exactly = 0) { apiService.getForecast(any(), any(), any(), any(), any()) }
+        verify(exactly = 0) { remoteDataSource.getForecast(any(), any(), any(), any(), any()) }
         coVerify { weatherDao.getForecast(locationKey) }
     }
 
-    @Test(expected = Exception::class)
+    @Test
     fun `getForecast when offline and no cache should throw exception`() = runTest {
         // Given
         every { networkHandler.isNetworkAvailable() } returns false
         coEvery { weatherDao.getForecast(locationKey) } returns null
 
-        // When
-        repository.getForecast(lat, lon)
+        // When & Then
+        repository.getForecast(lat, lon).test {
+            val error = awaitError()
+            assert(error.message?.contains("No internet connection") == true)
+        }
     }
 
     @Test
-    fun `getForecast when online but API fails should return cached data`() = runTest {
+    fun `getForecast when online but remote fails should return cached data`() = runTest {
         // Given
         val gson = com.google.gson.Gson()
         val realJson = gson.toJson(mockForecast)
         val realEntity = ForecastEntity(locationKey, realJson, System.currentTimeMillis())
         
         every { networkHandler.isNetworkAvailable() } returns true
-        coEvery { apiService.getForecast(any(), any(), any(), any(), any()) } throws Exception("API Error")
+        every { remoteDataSource.getForecast(any(), any(), any(), any(), any()) } returns flow { throw Exception("Remote Error") }
         coEvery { weatherDao.getForecast(locationKey) } returns realEntity
 
-        // When
-        val result = repository.getForecast(lat, lon)
+        // When & Then
+        repository.getForecast(lat, lon).test {
+            assertEquals(mockForecast, awaitItem())
+            awaitComplete()
+        }
 
-        // Then
-        assertEquals(mockForecast, result)
-        coVerify { apiService.getForecast(any(), any(), any(), any(), any()) }
+        verify { remoteDataSource.getForecast(any(), any(), any(), any(), any()) }
         coVerify { weatherDao.getForecast(locationKey) }
     }
 
