@@ -21,6 +21,7 @@ import iti.yousef.skymood.ui.favorites.FavoritesScreen
 import iti.yousef.skymood.ui.home.HomeScreen
 import iti.yousef.skymood.ui.onboarding.OnboardingScreen
 import iti.yousef.skymood.ui.settings.SettingsScreen
+import iti.yousef.skymood.ui.splash.SplashScreen
 import kotlinx.coroutines.launch
 
 /**
@@ -45,12 +46,27 @@ public fun AppNavigation(settingsDataStore: SettingsDataStore) {
 
     NavHost(
         navController = navController,
-        startDestination = startDestination,
+        startDestination = SplashRoute,
         enterTransition = { fadeIn(tween(400)) + slideInHorizontally(tween(400)) { it / 4 } },
         exitTransition = { fadeOut(tween(300)) },
         popEnterTransition = { fadeIn(tween(400)) + slideInHorizontally(tween(400)) { -it / 4 } },
         popExitTransition = { fadeOut(tween(300)) + slideOutHorizontally(tween(300)) { it / 4 } }
     ) {
+        // Splash screen — cross-fades out to the real first screen
+        composable<SplashRoute>(
+            enterTransition = { fadeIn(tween(200)) },
+            exitTransition = { fadeOut(tween(400)) }
+        ) {
+            SplashScreen(
+                onFinished = {
+                    val dest: Any = if (isOnboardingDone == true) HomeRoute else OnboardingRoute
+                    navController.navigate(dest) {
+                        popUpTo<SplashRoute> { inclusive = true }
+                    }
+                }
+            )
+        }
+
         // Onboarding flow
         composable<OnboardingRoute> {
             OnboardingScreen(
