@@ -86,6 +86,9 @@ dependencies {
     // OpenStreetMap
     implementation(libs.osmdroid.android)
 
+    // WorkManager
+    implementation(libs.work.manager)
+
     // Coil (image loading)
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)

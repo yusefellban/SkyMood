@@ -36,6 +36,7 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -87,6 +88,7 @@ import java.util.TimeZone
 fun HomeScreen(
     onNavigateToSettings: () -> Unit,
     onNavigateToFavorites: () -> Unit,
+    onNavigateToAlerts: () -> Unit = {},
     viewModel: HomeViewModel = viewModel()
 ) {
     val weatherState by viewModel.weatherState.collectAsState()
@@ -108,6 +110,7 @@ fun HomeScreen(
                 onRefresh = { viewModel.fetchWeather() },
                 onNavigateToSettings = onNavigateToSettings,
                 onNavigateToFavorites = onNavigateToFavorites,
+                onNavigateToAlerts = onNavigateToAlerts,
                 onToggleFavorite = { viewModel.toggleFavorite() }
             )
         }
@@ -236,6 +239,7 @@ private fun WeatherContent(
     onRefresh: () -> Unit,
     onNavigateToSettings: () -> Unit,
     onNavigateToFavorites: () -> Unit,
+    onNavigateToAlerts: () -> Unit,
     onToggleFavorite: () -> Unit
 ) {
     val currentItem = data.list.firstOrNull()
@@ -274,6 +278,7 @@ private fun WeatherContent(
                         onRefresh = onRefresh,
                         onNavigateToSettings = onNavigateToSettings,
                         onNavigateToFavorites = onNavigateToFavorites,
+                        onNavigateToAlerts = onNavigateToAlerts,
                         onToggleFavorite = onToggleFavorite
                     )
                 }
@@ -335,6 +340,7 @@ private fun CurrentWeatherHeader(
     onRefresh: () -> Unit,
     onNavigateToSettings: () -> Unit,
     onNavigateToFavorites: () -> Unit,
+    onNavigateToAlerts: () -> Unit,
     onToggleFavorite: () -> Unit
 ) {
     Column(
@@ -360,6 +366,13 @@ private fun CurrentWeatherHeader(
                     Icon(
                         imageVector = Icons.Default.List,
                         contentDescription = "Favorites",
+                        tint = Color.White.copy(alpha = 0.8f)
+                    )
+                }
+                IconButton(onClick = onNavigateToAlerts) {
+                    Icon(
+                        imageVector = Icons.Default.Notifications,
+                        contentDescription = "Alerts",
                         tint = Color.White.copy(alpha = 0.8f)
                     )
                 }

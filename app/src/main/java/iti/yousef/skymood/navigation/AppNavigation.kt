@@ -16,6 +16,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import iti.yousef.skymood.data.settings.LocationMethod
 import iti.yousef.skymood.data.settings.SettingsDataStore
+import iti.yousef.skymood.ui.alerts.AlertsScreen
 import iti.yousef.skymood.ui.favorites.FavoritesScreen
 import iti.yousef.skymood.ui.home.HomeScreen
 import iti.yousef.skymood.ui.onboarding.OnboardingScreen
@@ -68,7 +69,8 @@ public fun AppNavigation(settingsDataStore: SettingsDataStore) {
         composable<HomeRoute> {
             HomeScreen(
                 onNavigateToSettings = { navController.navigate(SettingsRoute) },
-                onNavigateToFavorites = { navController.navigate(FavoritesRoute) }
+                onNavigateToFavorites = { navController.navigate(FavoritesRoute) },
+                onNavigateToAlerts = { navController.navigate(AlertsRoute) }
             )
         }
 
@@ -88,7 +90,9 @@ public fun AppNavigation(settingsDataStore: SettingsDataStore) {
             )
         }
         composable<AlertsRoute> {
-            // TODO: Implement Alerts screen
+            AlertsScreen(
+                onNavigateBack = { navController.navigateUp() }
+            )
         }
         composable<SettingsRoute> {
             SettingsScreen(

@@ -21,6 +21,9 @@ class SkyMood : Application() {
     lateinit var repository: WeatherRepository
         private set
 
+    lateinit var alertDao: iti.yousef.skymood.data.local.AlertDao
+        private set
+
     lateinit var settingsDataStore: SettingsDataStore
         private set
 
@@ -36,5 +39,6 @@ class SkyMood : Application() {
             networkHandler = AndroidNetworkHandler(this)
         )
         settingsDataStore = SettingsDataStore(this)
+        alertDao = database.alertDao()
     }
 }
