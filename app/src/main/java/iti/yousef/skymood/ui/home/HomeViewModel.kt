@@ -102,19 +102,19 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                     }
                 }
 
-                val forecast = repository.getForecast(
+                repository.getForecast(
                     lat = lat,
                     lon = lon,
                     units = currentSettings.temperatureUnit.apiValue,
                     lang = currentSettings.language.apiValue,
-                )
-                _weatherState.value = WeatherUiState.Success(forecast)
+                ).collect { forecast ->
+                    _weatherState.value = WeatherUiState.Success(forecast)
+                }
             } catch (e: Exception) {
                 _weatherState.value = WeatherUiState.Error(
                     e.message ?: "An unexpected error occurred"
                 )
                 Log.d(TAG, "fetchWeather: "+e.message)
-
             }
         }
     }

@@ -3,6 +3,7 @@ package iti.yousef.skymood
 import android.app.Application
 import iti.yousef.skymood.data.local.WeatherDatabase
 import iti.yousef.skymood.data.remote.RetrofitClient
+import iti.yousef.skymood.data.remote.RetrofitWeatherRemoteDataSource
 import iti.yousef.skymood.data.repository.WeatherRepository
 import iti.yousef.skymood.data.settings.SettingsDataStore
 import iti.yousef.skymood.data.utils.AndroidNetworkHandler
@@ -27,8 +28,10 @@ class SkyMood : Application() {
         super.onCreate()
         database = WeatherDatabase.getInstance(this)
 
+        val remoteDataSource = RetrofitWeatherRemoteDataSource(RetrofitClient.apiService)
+
         repository = WeatherRepository(
-            apiService = RetrofitClient.apiService,
+            remoteDataSource = remoteDataSource,
             weatherDao = database.weatherDao(),
             networkHandler = AndroidNetworkHandler(this)
         )

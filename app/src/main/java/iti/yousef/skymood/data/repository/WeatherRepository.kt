@@ -9,12 +9,13 @@ import iti.yousef.skymood.data.local.ForecastEntity
 import iti.yousef.skymood.data.local.WeatherDao
 import iti.yousef.skymood.data.utils.NetworkHandler
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import iti.yousef.skymood.data.model.ForecastResponse
-import iti.yousef.skymood.data.remote.WeatherApiService
+import iti.yousef.skymood.data.remote.WeatherRemoteDataSource
 import iti.yousef.skymood.BuildConfig
 
 class WeatherRepository(
-    private val apiService: WeatherApiService,
+    private val remoteDataSource: WeatherRemoteDataSource,
     private val weatherDao: WeatherDao,
     private val networkHandler: NetworkHandler
 ) {
@@ -25,60 +26,62 @@ class WeatherRepository(
     }
 
     /**
-     *
-     * Fetches 5-day forecast for the given coordinates.
-     * If online: calls the API, caches the response, and returns it.
-     * If offline: returns the most recent cached data for this location.
+     * Fetches 5-day forecast for the given coordinates as a Flow.
+     * If online: calls the remote data source, caches the response, and emits it.
+     * If offline: emits the most recent cached data for this location.
      */
     @RequiresPermission(Manifest.permission.ACCESS_NETWORK_STATE)
-    suspend fun getForecast(
+    fun getForecast(
         lat: Double,
         lon: Double,
         units: String = "metric",
         lang: String = "en"
-    ): ForecastResponse {
+    ): Flow<ForecastResponse> = flow {
 
         val locationKey = "${lat}_${lon}"
 
-        return if (networkHandler.isNetworkAvailable()) {
+        if (networkHandler.isNetworkAvailable()) {
             try {
-                Log.d(TAG, "getForecast:   " +
-                        "                  lat = ${lat},\n" +
-                        "                    lon = ${lon},\n" +
-                        "                    units = ${units},\n" +
-                        "                    lang = ${lang},\n" +
-                        "                    appId = ${API_KEY} ")
-                // Fetch from API
-                val response = apiService.getForecast(
+                Log.d(TAG, "getForecast: lat=$lat, lon=$lon, units=$units, lang=$lang")
+                
+                // Fetch from remote via Flow
+                remoteDataSource.getForecast(
                     lat = lat,
                     lon = lon,
                     units = units,
                     lang = lang,
                     appId = API_KEY
-                )
-
-                // Cache the result
-                val json = gson.toJson(response)
-                weatherDao.insertForecast(
-                    ForecastEntity(
-                        locationKey = locationKey,
-                        jsonData = json,
-                        timestamp = System.currentTimeMillis()
+                ).collect { response ->
+                    // Cache the result
+                    val json = gson.toJson(response)
+                    weatherDao.insertForecast(
+                        ForecastEntity(
+                            locationKey = locationKey,
+                            jsonData = json,
+                            timestamp = System.currentTimeMillis()
+                        )
                     )
-                )
-                response
+                    emit(response)
+                }
             } catch (e: Exception) {
-                // If network call fails, try cache
-                getCachedForecast(locationKey)
-                    ?: throw Exception("Failed to fetch weather data: ${e.message}")
+                // If remote fetch fails, try cache
+                val cached = getCachedForecast(locationKey)
+                if (cached != null) {
+                    emit(cached)
+                } else {
+                    throw Exception("Failed to fetch weather data: ${e.message}")
+                }
             }
         } else {
             // Offline — read from cache
-            getCachedForecast(locationKey)
-                ?: throw Exception("No internet connection and no cached data available")
+            val cached = getCachedForecast(locationKey)
+            if (cached != null) {
+                emit(cached)
+            } else {
+                throw Exception("No internet connection and no cached data available")
+            }
         }
     }
-
 
     private suspend fun getCachedForecast(locationKey: String): ForecastResponse? {
         val entity = weatherDao.getForecast(locationKey) ?: return null
