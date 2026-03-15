@@ -6,9 +6,10 @@ import android.location.Location
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.Priority
-import com.google.android.gms.tasks.CancellationTokenSource
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import iti.yousef.skymood.SkyMood
 import iti.yousef.skymood.data.model.WeatherUiState
 import iti.yousef.skymood.data.settings.SettingsPreferences
@@ -16,11 +17,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 
 /**
  * ViewModel for the Home screen.
@@ -31,9 +27,8 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
     private  val TAG ="HomeViewModel"
     private val app = application as SkyMood
-    private val repository = app.repository
-    private val settingsDataStore = app.settingsDataStore
-    private val fusedLocationClient = LocationServices.getFusedLocationProviderClient(application)
+    private val weatherRepository = app.weatherRepository
+    private val settingsRepository = app.settingsRepository
     private val _weatherState = MutableStateFlow<WeatherUiState>(WeatherUiState.Loading)
     /** Observable weather UI state for the Home screen composable */
     val weatherState: StateFlow<WeatherUiState> = _weatherState.asStateFlow()
@@ -48,7 +43,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     init {
         // Observe settings changes and trigger weather fetch
         viewModelScope.launch {
-            settingsDataStore.settingsFlow
+            settingsRepository.settingsFlow
                 .distinctUntilChanged { old, new ->
                     old.temperatureUnit == new.temperatureUnit &&
                     old.language == new.language &&
@@ -64,7 +59,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
         // Observe favorites to see if current city is favorited
         viewModelScope.launch {
-            combine(repository.getAllFavorites(), _weatherState) { favorites, state ->
+            combine(weatherRepository.getAllFavorites(), _weatherState) { favorites, state ->
                 if (state is WeatherUiState.Success) {
                     favorites.any { it.cityName == state.data.city.name }
                 } else {
@@ -76,12 +71,11 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    @SuppressLint("MissingPermission")
     fun fetchWeather() {
         _weatherState.value = WeatherUiState.Loading
         viewModelScope.launch {
             try {
-                val currentSettings = settingsDataStore.settingsFlow.first()
+                val currentSettings = settingsRepository.settingsFlow.first()
                 val lat: Double
                 val lon: Double
 
@@ -90,7 +84,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                     lat = currentSettings.customLat
                     lon = currentSettings.customLon
                 } else {
-                    val location = getCurrentLocation()
+                    val location = app.locationRepository.getCurrentLocation()
                     if (location != null) {
                         lat = location.latitude
                         lon = location.longitude
@@ -102,7 +96,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                     }
                 }
 
-                repository.getForecast(
+                weatherRepository.getForecast(
                     lat = lat,
                     lon = lon,
                     units = currentSettings.temperatureUnit.apiValue,
@@ -119,32 +113,18 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-
-    @SuppressLint("MissingPermission")
-    private suspend fun getCurrentLocation(): Location? {
-        return try {
-            val cancellationToken = CancellationTokenSource()
-            fusedLocationClient.getCurrentLocation(
-                Priority.PRIORITY_HIGH_ACCURACY,
-                cancellationToken.token
-            ).await()
-        } catch (e: Exception) {
-            null
-        }
-    }
-
     fun toggleFavorite() {
         val state = _weatherState.value
         if (state is WeatherUiState.Success) {
             viewModelScope.launch {
-                val currentFavorites = repository.getAllFavorites().first()
+                val currentFavorites = weatherRepository.getAllFavorites().first()
                 val cityName = state.data.city.name
                 val existing = currentFavorites.find { it.cityName == cityName }
                 
                 if (existing != null) {
-                    repository.deleteFavorite(existing)
+                    weatherRepository.deleteFavorite(existing)
                 } else {
-                    repository.insertFavorite(
+                    weatherRepository.insertFavorite(
                         iti.yousef.skymood.data.local.FavoriteLocationEntity(
                             cityName = cityName,
                             latitude = state.data.city.coord.lat,

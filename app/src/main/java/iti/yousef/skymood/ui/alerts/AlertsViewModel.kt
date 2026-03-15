@@ -15,10 +15,10 @@ import kotlinx.coroutines.launch
 class AlertsViewModel(application: Application) : AndroidViewModel(application) {
 
     private val app = application as SkyMood
-    private val alertDao = app.alertDao
+    private val alertsRepository = app.alertsRepository
 
     /** Live list of all saved alerts */
-    val alerts: StateFlow<List<AlertEntity>> = alertDao.getAllAlerts()
+    val alerts: StateFlow<List<AlertEntity>> = alertsRepository.getAllAlerts()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     /**
@@ -39,29 +39,20 @@ class AlertsViewModel(application: Application) : AndroidViewModel(application) 
                 alertType = alertType,
                 isActive = true
             )
-            // Room returns the auto-generated id — use it for AlarmManager tagging
-            val generatedId = alertDao.insertAlert(entity)
-            val finalEntity = entity.copy(id = generatedId.toInt())
-            AlarmScheduler.scheduleAlarm(app, finalEntity)
+            // Pass to repository to handle insertion and scheduling
+            alertsRepository.addAlert(entity)
         }
     }
 
     fun toggleAlert(alert: AlertEntity) {
         viewModelScope.launch {
-            val newActive = !alert.isActive
-            alertDao.setAlertActive(alert.id, newActive)
-            if (!newActive) {
-                AlarmScheduler.cancelAlarm(app, alert.id)
-            } else {
-                AlarmScheduler.scheduleAlarm(app, alert.copy(isActive = true))
-            }
+            alertsRepository.toggleAlert(alert, !alert.isActive)
         }
     }
 
     fun deleteAlert(alert: AlertEntity) {
         viewModelScope.launch {
-            AlarmScheduler.cancelAlarm(app, alert.id)
-            alertDao.deleteAlert(alert)
+            alertsRepository.deleteAlert(alert)
         }
     }
 }

@@ -14,8 +14,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import iti.yousef.skymood.data.repository.SettingsRepository
 import iti.yousef.skymood.data.settings.LocationMethod
-import iti.yousef.skymood.data.settings.SettingsDataStore
 import iti.yousef.skymood.ui.alerts.AlertsScreen
 import iti.yousef.skymood.ui.favorites.FavoritesScreen
 import iti.yousef.skymood.ui.home.HomeScreen
@@ -29,15 +29,15 @@ import kotlinx.coroutines.launch
  * Determines the start destination based on whether onboarding has been completed.
  * Uses type-safe route-based navigation with smooth transition animations.
  *
- * @param settingsDataStore Used to check and update onboarding completion state
+ * @param settingsRepository Used to check and update onboarding completion state
  */
 @Composable
-public fun AppNavigation(settingsDataStore: SettingsDataStore) {
+public fun AppNavigation(settingsRepository: SettingsRepository) {
     val navController = rememberNavController()
     val scope = rememberCoroutineScope()
 
     // Observe onboarding completion to set the correct start destination
-    val isOnboardingDone by settingsDataStore.isOnboardingCompleted.collectAsState(initial = null)
+    val isOnboardingDone by settingsRepository.isOnboardingCompleted.collectAsState(initial = null)
 
     // Wait until DataStore emits the initial value before rendering
     if (isOnboardingDone == null) return
@@ -72,7 +72,7 @@ public fun AppNavigation(settingsDataStore: SettingsDataStore) {
             OnboardingScreen(
                 onFinished = {
                     scope.launch {
-                        settingsDataStore.setOnboardingCompleted()
+                        settingsRepository.setOnboardingCompleted()
                     }
                     navController.navigate(HomeRoute) {
                         popUpTo<OnboardingRoute> { inclusive = true }
@@ -96,8 +96,8 @@ public fun AppNavigation(settingsDataStore: SettingsDataStore) {
                 onNavigateBack = { navController.navigateUp() },
                 onFavoriteClick = { favorite ->
                     scope.launch {
-                        settingsDataStore.setCustomLocation(favorite.latitude, favorite.longitude)
-                        settingsDataStore.setLocationMethod(LocationMethod.MAP)
+                        settingsRepository.setCustomLocation(favorite.latitude, favorite.longitude)
+                        settingsRepository.setLocationMethod(LocationMethod.MAP)
                         navController.navigate(HomeRoute) {
                             popUpTo<HomeRoute> { inclusive = true }
                         }

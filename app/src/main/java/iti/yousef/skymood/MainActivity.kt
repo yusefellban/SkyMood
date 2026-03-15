@@ -30,7 +30,7 @@ class MainActivity : ComponentActivity() {
         val app = application as SkyMood
 
         setContent {
-            val settings by app.settingsDataStore.settingsFlow.collectAsState(initial = null)
+            val settings by app.settingsRepository.settingsFlow.collectAsState(initial = null)
             val languageCode = settings?.language?.apiValue ?: "en"
 
             val context = LocalContext.current
@@ -59,7 +59,7 @@ class MainActivity : ComponentActivity() {
                 LocalLayoutDirection provides layoutDirection
             ) {
                 SkyMoodTheme {
-                    AppNavigation(settingsDataStore = app.settingsDataStore)
+                    AppNavigation(settingsRepository = app.settingsRepository)
                 }
             }
         }

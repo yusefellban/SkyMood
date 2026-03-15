@@ -12,7 +12,6 @@ import android.media.RingtoneManager
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
-import com.google.android.gms.location.LocationServices
 import iti.yousef.skymood.MainActivity
 import iti.yousef.skymood.R
 import iti.yousef.skymood.SkyMood
@@ -22,7 +21,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 
 class WeatherAlertReceiver : BroadcastReceiver() {
 
@@ -40,7 +38,7 @@ class WeatherAlertReceiver : BroadcastReceiver() {
             val pendingResult = goAsync()
             CoroutineScope(Dispatchers.IO).launch {
                 try {
-                    val activeAlerts = app.alertDao.getActiveAlerts()
+                    val activeAlerts = app.alertsRepository.getAllAlerts().first()
                     activeAlerts.forEach { alert ->
                         if (alert.isActive && alert.toTime > System.currentTimeMillis()) {
                             AlarmScheduler.scheduleAlarm(context, alert)
@@ -64,7 +62,7 @@ class WeatherAlertReceiver : BroadcastReceiver() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 // Fetch settings
-                val currentSettings = app.settingsDataStore.settingsFlow.first()
+                val currentSettings = app.settingsRepository.settingsFlow.first()
                 var lat: Double? = null
                 var lon: Double? = null
 
@@ -79,8 +77,7 @@ class WeatherAlertReceiver : BroadcastReceiver() {
                     
                     if (hasFine || hasCoarse) {
                         try {
-                            val fusedClient = LocationServices.getFusedLocationProviderClient(context)
-                            val location: Location? = fusedClient.lastLocation.await()
+                            val location = app.locationRepository.getCurrentLocation()
                             if (location != null) {
                                 lat = location.latitude
                                 lon = location.longitude
@@ -96,7 +93,7 @@ class WeatherAlertReceiver : BroadcastReceiver() {
                 try {
                     val forecast = if (lat != null && lon != null) {
                         // 1. Try fetching live data if we have coordinates
-                        app.repository.getForecast(
+                        app.weatherRepository.getForecast(
                             lat = lat,
                             lon = lon,
                             units = currentSettings.temperatureUnit.apiValue,
@@ -104,7 +101,7 @@ class WeatherAlertReceiver : BroadcastReceiver() {
                         ).first()
                     } else {
                         // 2. Fallback to latest cached data if bg location fails
-                        app.repository.getLatestCachedForecast()
+                        app.weatherRepository.getLatestCachedForecast()
                             ?: throw Exception("No cache available")
                     }
 

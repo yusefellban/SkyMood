@@ -17,9 +17,9 @@ import kotlinx.coroutines.launch
 class SettingsViewModel(application: Application) : AndroidViewModel(application) {
 
     private val app = application as SkyMood
-    private val settingsDataStore = app.settingsDataStore
+    private val settingsRepository = app.settingsRepository
 
-    val settings: StateFlow<SettingsPreferences> = settingsDataStore.settingsFlow
+    val settings: StateFlow<SettingsPreferences> = settingsRepository.settingsFlow
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
@@ -28,31 +28,31 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
 
     fun updateTemperatureUnit(unit: TempUnit) {
         viewModelScope.launch {
-            settingsDataStore.setTempUnit(unit)
+            settingsRepository.setTempUnit(unit)
         }
     }
 
     fun updateWindSpeedUnit(unit: WindUnit) {
         viewModelScope.launch {
-            settingsDataStore.setWindUnit(unit)
+            settingsRepository.setWindUnit(unit)
         }
     }
 
     fun updateLanguage(language: Language) {
         viewModelScope.launch {
-            settingsDataStore.setLanguage(language)
+            settingsRepository.setLanguage(language)
         }
     }
 
     fun updateLocationMethod(method: LocationMethod) {
         viewModelScope.launch {
-            settingsDataStore.setLocationMethod(method)
+            settingsRepository.setLocationMethod(method)
         }
     }
 
     fun updateCustomLocation(lat: Double, lon: Double) {
         viewModelScope.launch {
-            settingsDataStore.setCustomLocation(lat, lon)
+            settingsRepository.setCustomLocation(lat, lon)
         }
     }
 }

@@ -17,10 +17,10 @@ import kotlinx.coroutines.launch
 class FavoritesViewModel(application: Application) : AndroidViewModel(application) {
 
     private val app = application as SkyMood
-    private val repository = app.repository
+    private val weatherRepository = app.weatherRepository
 
     /** StateFlow emitting the current list of favorites */
-    val favorites: StateFlow<List<FavoriteLocationEntity>> = repository.getAllFavorites()
+    val favorites: StateFlow<List<FavoriteLocationEntity>> = weatherRepository.getAllFavorites()
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
@@ -29,7 +29,7 @@ class FavoritesViewModel(application: Application) : AndroidViewModel(applicatio
 
     fun deleteFavorite(favorite: FavoriteLocationEntity) {
         viewModelScope.launch {
-            repository.deleteFavorite(favorite)
+            weatherRepository.deleteFavorite(favorite)
         }
     }
 }
