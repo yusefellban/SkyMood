@@ -3,29 +3,26 @@ package iti.yousef.skymood.ui.alerts
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.work.*
 import iti.yousef.skymood.SkyMood
 import iti.yousef.skymood.data.local.AlertEntity
 import iti.yousef.skymood.data.local.AlertType
-import iti.yousef.skymood.data.work.WeatherAlertWorker
+import iti.yousef.skymood.data.work.AlarmScheduler
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import java.util.concurrent.TimeUnit
 
 class AlertsViewModel(application: Application) : AndroidViewModel(application) {
 
     private val app = application as SkyMood
     private val alertDao = app.alertDao
-    private val workManager = WorkManager.getInstance(application)
 
     /** Live list of all saved alerts */
     val alerts: StateFlow<List<AlertEntity>> = alertDao.getAllAlerts()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     /**
-     * Adds a new alert and schedules it via WorkManager.
+     * Adds a new alert and schedules it via AlarmManager.
      * The worker fires at [fromTime] and runs until [toTime].
      */
     fun addAlert(
@@ -42,30 +39,11 @@ class AlertsViewModel(application: Application) : AndroidViewModel(application) 
                 alertType = alertType,
                 isActive = true
             )
-            alertDao.insertAlert(entity)
-            scheduleWork(entity)
+            // Room returns the auto-generated id — use it for AlarmManager tagging
+            val generatedId = alertDao.insertAlert(entity)
+            val finalEntity = entity.copy(id = generatedId.toInt())
+            AlarmScheduler.scheduleAlarm(app, finalEntity)
         }
-    }
-
-    private fun scheduleWork(alert: AlertEntity) {
-        val now = System.currentTimeMillis()
-        val delay = if (alert.fromTime > now) alert.fromTime - now else 0L
-        val duration = alert.toTime - alert.fromTime
-
-        val data = workDataOf(
-            WeatherAlertWorker.ALERT_ID_KEY to alert.id,
-            WeatherAlertWorker.ALERT_LABEL_KEY to alert.label,
-            WeatherAlertWorker.ALERT_TYPE_KEY to alert.alertType.name
-        )
-
-        // Fire once after the delay (at fromTime)
-        val request = OneTimeWorkRequestBuilder<WeatherAlertWorker>()
-            .setInitialDelay(delay, TimeUnit.MILLISECONDS)
-            .setInputData(data)
-            .addTag("alert_${alert.id}")
-            .build()
-
-        workManager.enqueue(request)
     }
 
     fun toggleAlert(alert: AlertEntity) {
@@ -73,16 +51,16 @@ class AlertsViewModel(application: Application) : AndroidViewModel(application) 
             val newActive = !alert.isActive
             alertDao.setAlertActive(alert.id, newActive)
             if (!newActive) {
-                workManager.cancelAllWorkByTag("alert_${alert.id}")
+                AlarmScheduler.cancelAlarm(app, alert.id)
             } else {
-                scheduleWork(alert.copy(isActive = true))
+                AlarmScheduler.scheduleAlarm(app, alert.copy(isActive = true))
             }
         }
     }
 
     fun deleteAlert(alert: AlertEntity) {
         viewModelScope.launch {
-            workManager.cancelAllWorkByTag("alert_${alert.id}")
+            AlarmScheduler.cancelAlarm(app, alert.id)
             alertDao.deleteAlert(alert)
         }
     }
