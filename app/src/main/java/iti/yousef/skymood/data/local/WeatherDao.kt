@@ -17,6 +17,9 @@ public interface WeatherDao {
     @Query("SELECT * FROM forecast_cache WHERE locationKey = :key LIMIT 1")
     suspend fun getForecast(key: String): ForecastEntity?
 
+    @Query("SELECT * FROM forecast_cache ORDER BY timestamp DESC LIMIT 1")
+    suspend fun getLatestForecast(): ForecastEntity?
+
     @Query("DELETE FROM forecast_cache WHERE locationKey = :key")
     suspend fun deleteForecast(key: String)
     @Query("DELETE FROM forecast_cache")

@@ -6,16 +6,23 @@ import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.location.Location
 import android.media.RingtoneManager
 import android.os.Build
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
+import com.google.android.gms.location.LocationServices
 import iti.yousef.skymood.MainActivity
 import iti.yousef.skymood.R
 import iti.yousef.skymood.SkyMood
 import iti.yousef.skymood.data.local.AlertType
+import iti.yousef.skymood.data.settings.LocationMethod
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 class WeatherAlertReceiver : BroadcastReceiver() {
 
@@ -47,57 +54,121 @@ class WeatherAlertReceiver : BroadcastReceiver() {
         }
 
         // Handle the incoming scheduled alarm
+        val app = context.applicationContext as SkyMood
         val alertId = intent.getIntExtra(ALERT_ID_KEY, -1)
         val alertLabel = intent.getStringExtra(ALERT_LABEL_KEY) ?: "Weather Alert"
         val alertTypeName = intent.getStringExtra(ALERT_TYPE_KEY) ?: AlertType.NOTIFICATION.name
         val alertType = AlertType.valueOf(alertTypeName)
 
-        // Generate a unique notification ID (defaults to current time if alertId is invalid)
-        val notifId = if (alertId > 0) alertId else System.currentTimeMillis().toInt()
+        val pendingResult = goAsync()
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                // Fetch settings
+                val currentSettings = app.settingsDataStore.settingsFlow.first()
+                var lat: Double? = null
+                var lon: Double? = null
 
-        val notificationManager =
-            context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-
-        val importance = if (alertType == AlertType.ALARM)
-            NotificationManager.IMPORTANCE_HIGH
-        else
-            NotificationManager.IMPORTANCE_DEFAULT
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(CHANNEL_ID, "SkyMood Weather Alerts", importance).apply {
-                description = "Active weather alerts"
-                if (alertType == AlertType.ALARM) {
-                    val alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
-                    setSound(alarmSound, audioAttributes)
-                    enableVibration(true)
-                    vibrationPattern = longArrayOf(0, 500, 200, 500)
+                if (currentSettings.locationMethod == LocationMethod.MAP &&
+                    currentSettings.customLat != null && currentSettings.customLon != null) {
+                    lat = currentSettings.customLat
+                    lon = currentSettings.customLon
+                } else {
+                    // Check for location permissions before accessing lastLocation
+                    val hasFine = ContextCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                    val hasCoarse = ContextCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                    
+                    if (hasFine || hasCoarse) {
+                        try {
+                            val fusedClient = LocationServices.getFusedLocationProviderClient(context)
+                            val location: Location? = fusedClient.lastLocation.await()
+                            if (location != null) {
+                                lat = location.latitude
+                                lon = location.longitude
+                            }
+                        } catch (e: Exception) {
+                            // Ignore location errors
+                        }
+                    }
                 }
+
+                var weatherText = "Your weather alert window is now active."
+
+                try {
+                    val forecast = if (lat != null && lon != null) {
+                        // 1. Try fetching live data if we have coordinates
+                        app.repository.getForecast(
+                            lat = lat,
+                            lon = lon,
+                            units = currentSettings.temperatureUnit.apiValue,
+                            lang = currentSettings.language.apiValue
+                        ).first()
+                    } else {
+                        // 2. Fallback to latest cached data if bg location fails
+                        app.repository.getLatestCachedForecast()
+                            ?: throw Exception("No cache available")
+                    }
+
+                    val currentForecast = forecast.list.firstOrNull()
+                    if (currentForecast != null) {
+                        val temp = currentForecast.main.temp.toInt()
+                        val desc = currentForecast.weather.firstOrNull()?.description?.replaceFirstChar { it.uppercase() } ?: ""
+                        val unitSymbol = if (currentSettings.temperatureUnit.apiValue == "metric") "°C" else if (currentSettings.temperatureUnit.apiValue == "imperial") "°F" else "K"
+                        weatherText = "$temp$unitSymbol in ${forecast.city.name}, $desc"
+                    }
+                } catch (e: Exception) {
+                    // 3. Keep default text if absolutely everything fails
+                }
+
+                // Show Notification
+                val notifId = if (alertId > 0) alertId else System.currentTimeMillis().toInt()
+
+                val notificationManager =
+                    context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+                val importance = if (alertType == AlertType.ALARM)
+                    NotificationManager.IMPORTANCE_HIGH
+                else
+                    NotificationManager.IMPORTANCE_DEFAULT
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    val channel = NotificationChannel(CHANNEL_ID, "SkyMood Weather Alerts", importance).apply {
+                        description = "Active weather alerts"
+                        if (alertType == AlertType.ALARM) {
+                            val alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+                            setSound(alarmSound, audioAttributes)
+                            enableVibration(true)
+                            vibrationPattern = longArrayOf(0, 500, 200, 500)
+                        }
+                    }
+                    notificationManager.createNotificationChannel(channel)
+                }
+
+                val tapIntent = Intent(context, MainActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                }
+                
+                val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                } else {
+                    PendingIntent.FLAG_UPDATE_CURRENT
+                }
+                val pendingIntent = PendingIntent.getActivity(context, notifId, tapIntent, flags)
+
+                val notificationBuilder = NotificationCompat.Builder(context, CHANNEL_ID)
+                    .setSmallIcon(R.mipmap.ic_launcher_round)
+                    .setContentTitle("☁️ SkyMood: $alertLabel")
+                    .setContentText(weatherText)
+                    .setAutoCancel(true)
+                    .setContentIntent(pendingIntent)
+                    .setPriority(
+                        if (alertType == AlertType.ALARM) NotificationCompat.PRIORITY_MAX
+                        else NotificationCompat.PRIORITY_DEFAULT
+                    )
+
+                notificationManager.notify(notifId, notificationBuilder.build())
+            } finally {
+                pendingResult.finish()
             }
-            notificationManager.createNotificationChannel(channel)
         }
-
-        val tapIntent = Intent(context, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-        }
-        
-        val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        } else {
-            PendingIntent.FLAG_UPDATE_CURRENT
-        }
-        val pendingIntent = PendingIntent.getActivity(context, notifId, tapIntent, flags)
-
-        val notificationBuilder = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
-            .setContentTitle("☁️ SkyMood: $alertLabel")
-            .setContentText("Your weather alert window is now active.")
-            .setAutoCancel(true)
-            .setContentIntent(pendingIntent)
-            .setPriority(
-                if (alertType == AlertType.ALARM) NotificationCompat.PRIORITY_MAX
-                else NotificationCompat.PRIORITY_DEFAULT
-            )
-
-        notificationManager.notify(notifId, notificationBuilder.build())
     }
 }

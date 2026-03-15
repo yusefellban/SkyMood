@@ -92,6 +92,15 @@ class WeatherRepository(
         }
     }
 
+    suspend fun getLatestCachedForecast(): ForecastResponse? {
+        val entity = weatherDao.getLatestForecast() ?: return null
+        return try {
+            gson.fromJson(entity.jsonData, ForecastResponse::class.java)
+        } catch (e: Exception) {
+            null
+        }
+    }
+
     // Favorites
     fun getAllFavorites(): Flow<List<FavoriteLocationEntity>> = weatherDao.getAllFavorites()
 
