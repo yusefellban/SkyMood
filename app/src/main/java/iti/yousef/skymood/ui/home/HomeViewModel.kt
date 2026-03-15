@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import iti.yousef.skymood.SkyMood
 import iti.yousef.skymood.data.model.WeatherUiState
+import iti.yousef.skymood.data.settings.LocationMethod
 import iti.yousef.skymood.data.settings.SettingsPreferences
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -79,7 +80,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                 val lat: Double
                 val lon: Double
 
-                if (currentSettings.locationMethod == iti.yousef.skymood.data.settings.LocationMethod.MAP &&
+                if (currentSettings.locationMethod == LocationMethod.MAP &&
                     currentSettings.customLat != null && currentSettings.customLon != null) {
                     lat = currentSettings.customLat
                     lon = currentSettings.customLon
@@ -89,6 +90,13 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                         lat = location.latitude
                         lon = location.longitude
                     } else {
+                        // Attempt to load from cache if location is missing
+                        val cachedForecast = weatherRepository.getLatestCachedForecast()
+                        if (cachedForecast != null) {
+                            _weatherState.value = WeatherUiState.Success(cachedForecast)
+                            return@launch
+                        }
+
                         _weatherState.value = WeatherUiState.Error(
                             "Unable to get your location. Please enable GPS and try again."
                         )

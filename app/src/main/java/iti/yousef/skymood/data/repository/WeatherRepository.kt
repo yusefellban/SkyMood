@@ -38,7 +38,7 @@ class WeatherRepository(
         lang: String = "en"
     ): Flow<ForecastResponse> = flow {
 
-        val locationKey = "${lat}_${lon}"
+        val locationKey = ForecastEntity.LAST_WEATHER_KEY
 
         if (networkHandler.isNetworkAvailable()) {
             try {

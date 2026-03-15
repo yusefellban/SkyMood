@@ -10,4 +10,8 @@ data class ForecastEntity(
     val locationKey: String,
     val jsonData: String,
     val timestamp: Long
-)
+) {
+    companion object {
+        const val LAST_WEATHER_KEY = "last_weather"
+    }
+}

@@ -27,7 +27,7 @@ class WeatherRepositoryTest {
 
     private val lat = 30.0
     private val lon = 31.0
-    private val locationKey = "30.0_31.0"
+    private val locationKey = ForecastEntity.LAST_WEATHER_KEY
     
     private val mockForecast = ForecastResponse(
         cod = "200",

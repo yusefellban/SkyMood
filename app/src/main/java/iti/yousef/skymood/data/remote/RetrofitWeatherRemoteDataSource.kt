@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.flow
 class RetrofitWeatherRemoteDataSource(
     private val apiService: WeatherApiService
 ) : WeatherRemoteDataSource {
+
     override fun getForecast(
         lat: Double,
         lon: Double,
