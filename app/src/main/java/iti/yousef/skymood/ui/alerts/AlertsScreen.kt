@@ -59,6 +59,7 @@ fun AlertsScreen(
 ) {
     val alerts by viewModel.alerts.collectAsState()
     var showAddDialog by remember { mutableStateOf(false) }
+    var alertToDelete by remember { mutableStateOf<AlertEntity?>(null) }
     val context = LocalContext.current
 
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -111,7 +112,7 @@ fun AlertsScreen(
                         AlertCard(
                             alert = alert,
                             onToggle = { viewModel.toggleAlert(alert) },
-                            onDelete = { viewModel.deleteAlert(alert) }
+                            onDelete = { alertToDelete = alert }
                         )
                     }
                     item { Spacer(modifier = Modifier.height(80.dp)) }
@@ -136,6 +137,36 @@ fun AlertsScreen(
             onConfirm = { label, from, to, type ->
                 viewModel.addAlert(label, from, to, type)
                 showAddDialog = false
+            }
+        )
+    }
+
+    alertToDelete?.let { alert ->
+        AlertDialog(
+            onDismissRequest = { alertToDelete = null },
+            containerColor = CardBackground,
+            titleContentColor = Color.White,
+            textContentColor = Color.White.copy(alpha = 0.8f),
+            title = { Text("Delete Alert") },
+            text = { Text("Are you sure you want to delete the alert \"${alert.label}\"?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.deleteAlert(alert)
+                        alertToDelete = null
+                    },
+                    colors = ButtonDefaults.textButtonColors(contentColor = AlertRed)
+                ) {
+                    Text("Delete", fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { alertToDelete = null },
+                    colors = ButtonDefaults.textButtonColors(contentColor = Color.White.copy(alpha = 0.7f))
+                ) {
+                    Text("Cancel")
+                }
             }
         )
     }

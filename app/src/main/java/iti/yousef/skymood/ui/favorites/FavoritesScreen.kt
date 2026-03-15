@@ -14,6 +14,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,6 +35,7 @@ fun FavoritesScreen(
     viewModel: FavoritesViewModel = viewModel()
 ) {
     val favorites by viewModel.favorites.collectAsState()
+    var favoriteToDelete by remember { mutableStateOf<FavoriteLocationEntity?>(null) }
 
     Scaffold(
         topBar = {
@@ -75,11 +79,34 @@ fun FavoritesScreen(
                     FavoriteItem(
                         favorite = favorite,
                         onClick = { onFavoriteClick(favorite) },
-                        onDelete = { viewModel.deleteFavorite(favorite) }
+                        onDelete = { favoriteToDelete = favorite }
                     )
                 }
             }
         }
+    }
+
+    favoriteToDelete?.let { favorite ->
+        AlertDialog(
+            onDismissRequest = { favoriteToDelete = null },
+            title = { Text("Delete Favorite") },
+            text = { Text("Are you sure you want to delete ${favorite.cityName} from your favorites?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.deleteFavorite(favorite)
+                        favoriteToDelete = null
+                    }
+                ) {
+                    Text("Delete", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { favoriteToDelete = null }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 }
 
