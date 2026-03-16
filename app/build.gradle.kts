@@ -89,6 +89,9 @@ dependencies {
     // WorkManager
     implementation(libs.work.manager)
 
+    // Splash Screen
+    implementation(libs.androidx.core.splashscreen)
+
     // Coil (image loading)
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
