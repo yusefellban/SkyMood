@@ -35,6 +35,9 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.WifiOff
+import androidx.compose.material.icons.filled.LocationOff
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -174,7 +177,8 @@ private fun LoadingView(scaffoldPadding: PaddingValues) {
 }
 
 /**
- * Error state: shows the error message with a retry button.
+ * Error state: shows a creative and attractive error card with a retry button.
+ * Handles different error types like Offline or Location Disabled.
  */
 @Composable
 private fun ErrorView(
@@ -194,65 +198,135 @@ private fun ErrorView(
             onRetry()
         }
     }
+
+    // Design tokens based on error type
+    val errorData = when (message) {
+        "OFFLINE" -> ErrorDesignData(
+            icon = Icons.Default.WifiOff,
+            title = androidx.compose.ui.res.stringResource(iti.yousef.skymood.R.string.oops),
+            description = "It seems you're offline. Please check your internet connection to get the latest weather updates.",
+            gradient = listOf(Color(0xFF454E5F), Color(0xFF2C313C))
+        )
+        "LOCATION_DISABLED" -> ErrorDesignData(
+            icon = Icons.Default.LocationOff,
+            title = "Location Required",
+            description = "We need your location to show local weather. Please enable GPS and try again.",
+            gradient = listOf(Color(0xFF03A9F4), Color(0xFF3F51B5))
+        )
+        else -> ErrorDesignData(
+            icon = Icons.Default.Warning,
+            title = androidx.compose.ui.res.stringResource(iti.yousef.skymood.R.string.oops),
+            description = message,
+            gradient = listOf(Color(0xFF1A237E), Color(0xFF283593))
+        )
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(
-                androidx.compose.ui.graphics.Brush.verticalGradient(
-                    listOf(Color(0xFF1A237E), Color(0xFF283593), Color(0xFF303F9F))
-                )
+                androidx.compose.ui.graphics.Brush.verticalGradient(errorData.gradient)
             ),
         contentAlignment = Alignment.Center
     ) {
+        // Aesthetic background elements
+        Box(
+            modifier = Modifier
+                .size(300.dp)
+                .background(Color.White.copy(alpha = 0.03f), androidx.compose.foundation.shape.CircleShape)
+                .align(Alignment.TopEnd)
+                .padding(32.dp)
+        )
 
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(scaffoldPadding).padding(32.dp)
+            modifier = Modifier
+                .padding(scaffoldPadding)
+                .padding(32.dp)
+                .fillMaxWidth()
         ) {
+            // Creative Icon Container
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .size(120.dp)
+                    .background(
+                        Color.White.copy(alpha = 0.1f),
+                        RoundedCornerShape(32.dp)
+                    )
+            ) {
+                Icon(
+                    imageVector = errorData.icon,
+                    contentDescription = null,
+                    modifier = Modifier.size(64.dp),
+                    tint = Color.White
+                )
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
             Text(
-                text = "☁️",
-                fontSize = 64.sp
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = androidx.compose.ui.res.stringResource(iti.yousef.skymood.R.string.oops),
+                text = errorData.title,
                 color = Color.White,
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = message,
-                color = Color.White.copy(alpha = 0.7f),
-                fontSize = 14.sp,
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center
             )
-            Spacer(modifier = Modifier.height(24.dp))
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = errorData.description,
+                color = Color.White.copy(alpha = 0.7f),
+                fontSize = 16.sp,
+                lineHeight = 24.sp,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
+
+            Spacer(modifier = Modifier.height(48.dp))
+
             ElevatedButton(
                 onClick = {
-                    if (locationGranted) {
-                        onRetry()
-                    } else {
+                    if (message == "LOCATION_DISABLED") {
                         permissionLauncher.launch(
                             arrayOf(
                                 Manifest.permission.ACCESS_FINE_LOCATION,
                                 Manifest.permission.ACCESS_COARSE_LOCATION
                             )
                         )
+                    } else {
+                        onRetry()
                     }
                 },
+                modifier = Modifier
+                    .fillMaxWidth(0.7f)
+                    .height(56.dp),
+                shape = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.elevatedButtonColors(
-                    containerColor = Color.White.copy(alpha = 0.2f),
-                    contentColor = Color.White
-                )
+                    containerColor = Color.White,
+                    contentColor = Color(0xFF1A237E)
+                ),
+                elevation = ButtonDefaults.elevatedButtonElevation(defaultElevation = 8.dp)
             ) {
                 Icon(Icons.Default.Refresh, contentDescription = "Retry")
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(androidx.compose.ui.res.stringResource(iti.yousef.skymood.R.string.try_again))
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(
+                    text = androidx.compose.ui.res.stringResource(iti.yousef.skymood.R.string.try_again),
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
             }
         }
     }
 }
+
+private data class ErrorDesignData(
+    val icon: ImageVector,
+    val title: String,
+    val description: String,
+    val gradient: List<Color>
+)
 
 /**
  * Main weather content layout: animated background + scrollable forecast data.

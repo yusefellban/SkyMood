@@ -82,10 +82,15 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         _weatherState.value = WeatherUiState.Loading
         viewModelScope.launch {
             try {
+                // 1. Check Internet Connection
+                val networkHandler = iti.yousef.skymood.data.utils.AndroidNetworkHandler(app)
+                val isOnline = networkHandler.isNetworkAvailable()
+
                 val currentSettings = settingsRepository.settingsFlow.first()
                 val lat: Double
                 val lon: Double
 
+                // 2. Determine Location
                 if (currentSettings.locationMethod == LocationMethod.MAP &&
                     currentSettings.customLat != null && currentSettings.customLon != null) {
                     lat = currentSettings.customLat
@@ -96,16 +101,34 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                         lat = location.latitude
                         lon = location.longitude
                     } else {
-                        // Attempt to load from cache if location is missing
+                        // If location is missing, try cache first
                         val cachedForecast = weatherRepository.getLatestCachedForecast()
                         if (cachedForecast != null) {
                             _weatherState.value = WeatherUiState.Success(cachedForecast)
+                            // If we were supposed to be online but aren't, maybe show a toast?
+                            if (!isOnline) {
+                                _events.emit(UiEvent.ShowSnackbar("Showing cached data. You are offline."))
+                            }
                             return@launch
                         }
 
-                        val msg = "Unable to get your location. Please enable GPS and try again."
-                        _weatherState.value = WeatherUiState.Error(msg)
+                        // No location and no cache -> show explicit Location error
+                        val msg = "Location services are disabled. Please enable GPS to see your local weather."
+                        _weatherState.value = WeatherUiState.Error("LOCATION_DISABLED")
                         _events.emit(UiEvent.ShowSnackbar(msg))
+                        return@launch
+                    }
+                }
+
+                // 3. Fetch from repository
+                if (!isOnline) {
+                    val cachedForecast = weatherRepository.getLatestCachedForecast()
+                    if (cachedForecast != null) {
+                        _weatherState.value = WeatherUiState.Success(cachedForecast)
+                        _events.emit(UiEvent.ShowSnackbar("Showing cached data. You are offline."))
+                        return@launch
+                    } else {
+                        _weatherState.value = WeatherUiState.Error("OFFLINE")
                         return@launch
                     }
                 }
@@ -120,7 +143,12 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                 }
             } catch (e: Exception) {
                 val errorMessage = e.message ?: "An unexpected error occurred"
-                _weatherState.value = WeatherUiState.Error(errorMessage)
+                // Check if it's a network-related exception
+                if (e is java.net.UnknownHostException || e is java.net.ConnectException) {
+                     _weatherState.value = WeatherUiState.Error("OFFLINE")
+                } else {
+                     _weatherState.value = WeatherUiState.Error(errorMessage)
+                }
                 _events.emit(UiEvent.ShowSnackbar(errorMessage))
                 Log.d(TAG, "fetchWeather: " + errorMessage)
             }
