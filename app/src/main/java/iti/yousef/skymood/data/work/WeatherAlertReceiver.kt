@@ -32,11 +32,15 @@ class WeatherAlertReceiver : BroadcastReceiver() {
         const val ALERT_TYPE_KEY = "alert_type"
     }
 
+    /**
+     * Dismiss alert , Alarm work,Restart phone
+     */
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action == ACTION_DISMISS_ALARM) {
             val alertId = intent.getIntExtra(ALERT_ID_KEY, -1)
             if (alertId != -1) {
-                val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                val notificationManager =
+                    context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
                 notificationManager.cancel(alertId)
             }
             return
@@ -77,14 +81,21 @@ class WeatherAlertReceiver : BroadcastReceiver() {
                 var lon: Double? = null
 
                 if (currentSettings.locationMethod == LocationMethod.MAP &&
-                    currentSettings.customLat != null && currentSettings.customLon != null) {
+                    currentSettings.customLat != null && currentSettings.customLon != null
+                ) {
                     lat = currentSettings.customLat
                     lon = currentSettings.customLon
                 } else {
                     // Check for location permissions before accessing lastLocation
-                    val hasFine = ContextCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-                    val hasCoarse = ContextCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
-                    
+                    val hasFine = ContextCompat.checkSelfPermission(
+                        context,
+                        android.Manifest.permission.ACCESS_FINE_LOCATION
+                    ) == PackageManager.PERMISSION_GRANTED
+                    val hasCoarse = ContextCompat.checkSelfPermission(
+                        context,
+                        android.Manifest.permission.ACCESS_COARSE_LOCATION
+                    ) == PackageManager.PERMISSION_GRANTED
+
                     if (hasFine || hasCoarse) {
                         try {
                             val location = app.locationRepository.getCurrentLocation()
@@ -118,8 +129,11 @@ class WeatherAlertReceiver : BroadcastReceiver() {
                     val currentForecast = forecast.list.firstOrNull()
                     if (currentForecast != null) {
                         val temp = currentForecast.main.temp.toInt()
-                        val desc = currentForecast.weather.firstOrNull()?.description?.replaceFirstChar { it.uppercase() } ?: ""
-                        val unitSymbol = if (currentSettings.temperatureUnit.apiValue == "metric") "°C" else if (currentSettings.temperatureUnit.apiValue == "imperial") "°F" else "K"
+                        val desc =
+                            currentForecast.weather.firstOrNull()?.description?.replaceFirstChar { it.uppercase() }
+                                ?: ""
+                        val unitSymbol =
+                            if (currentSettings.temperatureUnit.apiValue == "metric") "°C" else if (currentSettings.temperatureUnit.apiValue == "imperial") "°F" else "K"
                         weatherText = "$temp$unitSymbol in ${forecast.city.name}, $desc"
                     }
                 } catch (e: Exception) {
@@ -129,19 +143,24 @@ class WeatherAlertReceiver : BroadcastReceiver() {
                 // Show Notification
                 val notifId = if (alertId > 0) alertId else System.currentTimeMillis().toInt()
 
-                val channelId = if (alertType == AlertType.ALARM) ALARM_CHANNEL_ID else NOTIF_CHANNEL_ID
-                val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                val channelId =
+                    if (alertType == AlertType.ALARM) ALARM_CHANNEL_ID else NOTIF_CHANNEL_ID
+                val notificationManager =
+                    context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
                 val importance = if (alertType == AlertType.ALARM)
                     NotificationManager.IMPORTANCE_HIGH
                 else
                     NotificationManager.IMPORTANCE_DEFAULT
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    val channelName = if (alertType == AlertType.ALARM) "Weather Alarms" else "Weather Notifications"
+                    val channelName =
+                        if (alertType == AlertType.ALARM) "Weather Alarms" else "Weather Notifications"
                     val channel = NotificationChannel(channelId, channelName, importance).apply {
-                        description = if (alertType == AlertType.ALARM) "Active weather alarms" else "Regular weather notifications"
+                        description =
+                            if (alertType == AlertType.ALARM) "Active weather alarms" else "Regular weather notifications"
                         if (alertType == AlertType.ALARM) {
-                            val alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+                            val alarmSound =
+                                RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
                             setSound(alarmSound, audioAttributes)
                             enableVibration(true)
                             vibrationPattern = longArrayOf(0, 500, 200, 500)
@@ -153,7 +172,7 @@ class WeatherAlertReceiver : BroadcastReceiver() {
                 val tapIntent = Intent(context, MainActivity::class.java).apply {
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                 }
-                
+
                 val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                 } else {
@@ -179,17 +198,21 @@ class WeatherAlertReceiver : BroadcastReceiver() {
                         putExtra(ALERT_ID_KEY, notifId)
                     }
                     val dismissPendingIntent = PendingIntent.getBroadcast(
-                        context, 
-                        notifId + 100, 
-                        dismissIntent, 
+                        context,
+                        notifId + 100,
+                        dismissIntent,
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE else PendingIntent.FLAG_UPDATE_CURRENT
                     )
-                    notificationBuilder.addAction(android.R.drawable.ic_menu_close_clear_cancel, "Dismiss", dismissPendingIntent)
+                    notificationBuilder.addAction(
+                        android.R.drawable.ic_menu_close_clear_cancel,
+                        "Dismiss",
+                        dismissPendingIntent
+                    )
                     notificationBuilder.setOngoing(true)
                 }
 
                 notificationManager.notify(notifId, notificationBuilder.build())
-                
+
                 // If it's an alarm, it will keep making sound until dismissed thanks to high importance channel + ongoing flag
             } finally {
                 pendingResult.finish()

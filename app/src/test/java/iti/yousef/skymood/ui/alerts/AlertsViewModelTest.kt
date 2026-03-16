@@ -71,7 +71,7 @@ class AlertsViewModelTest {
         viewModel.addAlert(label, fromTime, toTime, type)
 
         // Assert
-        coVerify(exactly = 1) { 
+        coVerify(exactly = 1) {
             alertsRepository.addAlert(
                 match { it.label == label && it.fromTime == fromTime && it.toTime == toTime && it.alertType == type }
             )

@@ -143,7 +143,6 @@ fun HomeScreen(
  * Loading state: centered progress indicator over a calm gradient.
  */
 @Composable
-@Preview
 private fun LoadingView(scaffoldPadding: PaddingValues) {
     Box(
         modifier = Modifier
@@ -210,7 +209,6 @@ private fun ErrorView(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.padding(scaffoldPadding).padding(32.dp)
         ) {
-            //TODO : cheek premetion if not ask
             Text(
                 text = "☁️",
                 fontSize = 64.sp
