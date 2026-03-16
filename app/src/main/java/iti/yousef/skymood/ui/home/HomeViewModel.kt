@@ -1,8 +1,6 @@
 package iti.yousef.skymood.ui.home
 
-import android.annotation.SuppressLint
 import android.app.Application
-import android.location.Location
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
@@ -11,9 +9,10 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import iti.yousef.skymood.SkyMood
+import iti.yousef.skymood.data.model.FavoriteLocationEntity
 import iti.yousef.skymood.data.model.WeatherUiState
-import iti.yousef.skymood.data.settings.LocationMethod
-import iti.yousef.skymood.data.settings.SettingsPreferences
+import iti.yousef.skymood.data.local.settings.LocationMethod
+import iti.yousef.skymood.data.local.settings.SettingsPreferences
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -133,7 +132,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                     weatherRepository.deleteFavorite(existing)
                 } else {
                     weatherRepository.insertFavorite(
-                        iti.yousef.skymood.data.local.FavoriteLocationEntity(
+                        FavoriteLocationEntity(
                             cityName = cityName,
                             latitude = state.data.city.coord.lat,
                             longitude = state.data.city.coord.lon

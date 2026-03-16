@@ -3,8 +3,8 @@ package iti.yousef.skymood.data.repository
 import android.app.Application
 import io.mockk.*
 import iti.yousef.skymood.data.local.AlertDao
-import iti.yousef.skymood.data.local.AlertEntity
-import iti.yousef.skymood.data.local.AlertType
+import iti.yousef.skymood.data.model.Entity.AlertEntity
+import iti.yousef.skymood.data.model.Entity.AlertType
 import iti.yousef.skymood.data.work.AlarmScheduler
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest

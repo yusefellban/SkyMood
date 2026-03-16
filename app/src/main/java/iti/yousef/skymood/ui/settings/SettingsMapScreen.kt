@@ -14,6 +14,7 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import iti.yousef.skymood.data.local.settings.LocationMethod
 import org.osmdroid.config.Configuration
 import org.osmdroid.events.MapEventsReceiver
 import org.osmdroid.util.GeoPoint
@@ -78,7 +79,7 @@ fun SettingsMapScreen(
                     IconButton(
                         onClick = {
                             viewModel.updateCustomLocation(selectedPoint.latitude, selectedPoint.longitude)
-                            viewModel.updateLocationMethod(iti.yousef.skymood.data.settings.LocationMethod.MAP)
+                            viewModel.updateLocationMethod(LocationMethod.MAP)
                             onNavigateBack()
                         }
                     ) {

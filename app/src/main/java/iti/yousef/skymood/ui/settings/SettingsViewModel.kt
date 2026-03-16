@@ -4,11 +4,11 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import iti.yousef.skymood.SkyMood
-import iti.yousef.skymood.data.settings.Language
-import iti.yousef.skymood.data.settings.LocationMethod
-import iti.yousef.skymood.data.settings.SettingsPreferences
-import iti.yousef.skymood.data.settings.TempUnit
-import iti.yousef.skymood.data.settings.WindUnit
+import iti.yousef.skymood.data.local.settings.Language
+import iti.yousef.skymood.data.local.settings.LocationMethod
+import iti.yousef.skymood.data.local.settings.SettingsPreferences
+import iti.yousef.skymood.data.local.settings.TempUnit
+import iti.yousef.skymood.data.local.settings.WindUnit
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn

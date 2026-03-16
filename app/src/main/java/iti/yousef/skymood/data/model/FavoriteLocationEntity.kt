@@ -1,4 +1,4 @@
-package iti.yousef.skymood.data.local
+package iti.yousef.skymood.data.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

@@ -1,13 +1,18 @@
 package iti.yousef.skymood.data.repository
 
 import io.mockk.*
-import iti.yousef.skymood.data.settings.*
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import app.cash.turbine.test
+import iti.yousef.skymood.data.local.settings.Language
+import iti.yousef.skymood.data.local.settings.LocationMethod
+import iti.yousef.skymood.data.local.settings.SettingsDataStore
+import iti.yousef.skymood.data.local.settings.SettingsPreferences
+import iti.yousef.skymood.data.local.settings.TempUnit
+import iti.yousef.skymood.data.local.settings.WindUnit
 
 class SettingsRepositoryTest {
 

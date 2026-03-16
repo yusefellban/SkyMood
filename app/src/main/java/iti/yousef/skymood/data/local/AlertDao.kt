@@ -1,6 +1,7 @@
 package iti.yousef.skymood.data.local
 
 import androidx.room.*
+import iti.yousef.skymood.data.model.Entity.AlertEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao

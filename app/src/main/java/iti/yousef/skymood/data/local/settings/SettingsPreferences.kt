@@ -1,4 +1,6 @@
-package iti.yousef.skymood.data.settings
+package iti.yousef.skymood.data.local.settings
+
+import iti.yousef.skymood.R
 
 /**
  * Data class holding all user-configurable settings.
@@ -22,29 +24,29 @@ public data class SettingsPreferences(
  * - KELVIN → "standard"
  */
 enum class TempUnit(val titleResId: Int, val apiValue: String) {
-    CELSIUS(iti.yousef.skymood.R.string.temperature_unit_celsius, "metric"),
-    FAHRENHEIT(iti.yousef.skymood.R.string.temperature_unit_fahrenheit, "imperial"),
-    KELVIN(iti.yousef.skymood.R.string.temperature_unit_kelvin, "standard")
+    CELSIUS(R.string.temperature_unit_celsius, "metric"),
+    FAHRENHEIT(R.string.temperature_unit_fahrenheit, "imperial"),
+    KELVIN(R.string.temperature_unit_kelvin, "standard")
 }
 
 /**
  * Wind speed unit options with display labels.
  */
 enum class WindUnit(val titleResId: Int) {
-    METER_SEC(iti.yousef.skymood.R.string.wind_unit_ms),
-    MILES_HOUR(iti.yousef.skymood.R.string.wind_unit_mph)
+    METER_SEC(R.string.wind_unit_ms),
+    MILES_HOUR(R.string.wind_unit_mph)
 }
 
 
 enum class Language(val titleResId: Int, val apiValue: String) {
-    ENGLISH(iti.yousef.skymood.R.string.lang_english, "en"),
-    ARABIC(iti.yousef.skymood.R.string.lang_arabic, "ar")
+    ENGLISH(R.string.lang_english, "en"),
+    ARABIC(R.string.lang_arabic, "ar")
 }
 
 /**
  * How the app should determine the user's location.
  */
 enum class LocationMethod(val titleResId: Int) {
-    GPS(iti.yousef.skymood.R.string.loc_gps),
-    MAP(iti.yousef.skymood.R.string.loc_map)
+    GPS(R.string.loc_gps),
+    MAP(R.string.loc_map)
 }

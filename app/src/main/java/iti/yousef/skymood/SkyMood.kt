@@ -8,7 +8,7 @@ import iti.yousef.skymood.data.repository.AlertsRepository
 import iti.yousef.skymood.data.repository.LocationRepository
 import iti.yousef.skymood.data.repository.SettingsRepository
 import iti.yousef.skymood.data.repository.WeatherRepository
-import iti.yousef.skymood.data.settings.SettingsDataStore
+import iti.yousef.skymood.data.local.settings.SettingsDataStore
 import iti.yousef.skymood.data.utils.AndroidNetworkHandler
 
 /**

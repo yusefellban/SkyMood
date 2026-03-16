@@ -5,6 +5,8 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import iti.yousef.skymood.data.model.FavoriteLocationEntity
+import iti.yousef.skymood.data.model.ForecastEntity
 import kotlinx.coroutines.flow.Flow
 
 

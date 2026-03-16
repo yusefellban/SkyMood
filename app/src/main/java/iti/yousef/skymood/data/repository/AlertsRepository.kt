@@ -2,7 +2,7 @@ package iti.yousef.skymood.data.repository
 
 import android.app.Application
 import iti.yousef.skymood.data.local.AlertDao
-import iti.yousef.skymood.data.local.AlertEntity
+import iti.yousef.skymood.data.model.Entity.AlertEntity
 import iti.yousef.skymood.data.work.AlarmScheduler
 import kotlinx.coroutines.flow.Flow
 

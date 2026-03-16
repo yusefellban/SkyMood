@@ -4,7 +4,6 @@ import android.Manifest
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
@@ -30,7 +29,6 @@ import androidx.compose.material.icons.filled.Air
 import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Thermostat
-import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.WaterDrop
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
@@ -54,7 +52,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
@@ -71,8 +68,8 @@ import coil3.request.crossfade
 import iti.yousef.skymood.data.model.ForecastItem
 import iti.yousef.skymood.data.model.ForecastResponse
 import iti.yousef.skymood.data.model.WeatherUiState
-import iti.yousef.skymood.data.settings.SettingsPreferences
-import iti.yousef.skymood.data.settings.WindUnit
+import iti.yousef.skymood.data.local.settings.SettingsPreferences
+import iti.yousef.skymood.data.local.settings.WindUnit
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date

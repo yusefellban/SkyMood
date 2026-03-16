@@ -19,15 +19,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import iti.yousef.skymood.data.settings.Language
-import iti.yousef.skymood.data.settings.LocationMethod
-import iti.yousef.skymood.data.settings.TempUnit
-import iti.yousef.skymood.data.settings.WindUnit
+import iti.yousef.skymood.data.local.settings.Language
+import iti.yousef.skymood.data.local.settings.LocationMethod
+import iti.yousef.skymood.data.local.settings.TempUnit
+import iti.yousef.skymood.data.local.settings.WindUnit
 
 /**
  * Screen allowing users to configure application preferences.
@@ -74,7 +74,7 @@ fun SettingsScreen(
                 title = androidx.compose.ui.res.stringResource(iti.yousef.skymood.R.string.location), 
                 icon = Icons.Default.LocationOn
             ) {
-                val optionsStr = LocationMethod.entries.map { androidx.compose.ui.res.stringResource(it.titleResId) }
+                val optionsStr = LocationMethod.entries.map { stringResource(it.titleResId) }
                 val selectedStr = androidx.compose.ui.res.stringResource(settings.locationMethod.titleResId)
                 SettingsOptionGroup(
                     options = optionsStr,
@@ -113,7 +113,7 @@ fun SettingsScreen(
                 title = androidx.compose.ui.res.stringResource(iti.yousef.skymood.R.string.temperature_unit), 
                 icon = Icons.Default.Thermostat
             ) {
-                val optionsStr = TempUnit.entries.map { androidx.compose.ui.res.stringResource(it.titleResId) }
+                val optionsStr = TempUnit.entries.map { stringResource(it.titleResId) }
                 val selectedStr = androidx.compose.ui.res.stringResource(settings.temperatureUnit.titleResId)
                 SettingsOptionGroup(
                     options = optionsStr,
@@ -132,7 +132,7 @@ fun SettingsScreen(
                 title = androidx.compose.ui.res.stringResource(iti.yousef.skymood.R.string.wind_speed_unit), 
                 icon = Icons.Default.Speed
             ) {
-                val optionsStr = WindUnit.entries.map { androidx.compose.ui.res.stringResource(it.titleResId) }
+                val optionsStr = WindUnit.entries.map { stringResource(it.titleResId) }
                 val selectedStr = androidx.compose.ui.res.stringResource(settings.windSpeedUnit.titleResId)
                 SettingsOptionGroup(
                     options = optionsStr,
@@ -151,7 +151,7 @@ fun SettingsScreen(
                 title = androidx.compose.ui.res.stringResource(iti.yousef.skymood.R.string.language), 
                 icon = Icons.Default.Language
             ) {
-                val optionsStr = Language.entries.map { androidx.compose.ui.res.stringResource(it.titleResId) }
+                val optionsStr = Language.entries.map { stringResource(it.titleResId) }
                 val selectedStr = androidx.compose.ui.res.stringResource(settings.language.titleResId)
                 SettingsOptionGroup(
                     options = optionsStr,

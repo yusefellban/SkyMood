@@ -1,4 +1,4 @@
-package iti.yousef.skymood.data.settings
+package iti.yousef.skymood.data.local.settings
 
 import android.content.Context
 import androidx.datastore.core.DataStore

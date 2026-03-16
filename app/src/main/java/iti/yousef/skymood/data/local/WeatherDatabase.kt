@@ -6,6 +6,10 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverter
 import androidx.room.TypeConverters
+import iti.yousef.skymood.data.model.Entity.AlertEntity
+import iti.yousef.skymood.data.model.Entity.AlertType
+import iti.yousef.skymood.data.model.FavoriteLocationEntity
+import iti.yousef.skymood.data.model.ForecastEntity
 
 
 @TypeConverters(WeatherDatabase.Converters::class)

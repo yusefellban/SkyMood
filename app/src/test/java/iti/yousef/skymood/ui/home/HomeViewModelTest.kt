@@ -1,6 +1,5 @@
 package iti.yousef.skymood.ui.home
 
-import android.location.Location
 import app.cash.turbine.test
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -10,7 +9,6 @@ import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
 import android.util.Log
 import iti.yousef.skymood.SkyMood
-import iti.yousef.skymood.data.local.FavoriteLocationEntity
 import iti.yousef.skymood.data.model.City
 import iti.yousef.skymood.data.model.Coord
 import iti.yousef.skymood.data.model.ForecastResponse
@@ -18,10 +16,8 @@ import iti.yousef.skymood.data.model.WeatherUiState
 import iti.yousef.skymood.data.repository.LocationRepository
 import iti.yousef.skymood.data.repository.SettingsRepository
 import iti.yousef.skymood.data.repository.WeatherRepository
-import iti.yousef.skymood.data.settings.Language
-import iti.yousef.skymood.data.settings.LocationMethod
-import iti.yousef.skymood.data.settings.SettingsPreferences
-import iti.yousef.skymood.data.settings.TempUnit
+import iti.yousef.skymood.data.local.settings.LocationMethod
+import iti.yousef.skymood.data.local.settings.SettingsPreferences
 import iti.yousef.skymood.rules.MainDispatcherRule
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest

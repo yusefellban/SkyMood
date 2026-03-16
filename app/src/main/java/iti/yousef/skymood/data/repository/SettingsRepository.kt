@@ -1,11 +1,11 @@
 package iti.yousef.skymood.data.repository
 
-import iti.yousef.skymood.data.settings.Language
-import iti.yousef.skymood.data.settings.LocationMethod
-import iti.yousef.skymood.data.settings.SettingsDataStore
-import iti.yousef.skymood.data.settings.SettingsPreferences
-import iti.yousef.skymood.data.settings.TempUnit
-import iti.yousef.skymood.data.settings.WindUnit
+import iti.yousef.skymood.data.local.settings.Language
+import iti.yousef.skymood.data.local.settings.LocationMethod
+import iti.yousef.skymood.data.local.settings.SettingsDataStore
+import iti.yousef.skymood.data.local.settings.SettingsPreferences
+import iti.yousef.skymood.data.local.settings.TempUnit
+import iti.yousef.skymood.data.local.settings.WindUnit
 import kotlinx.coroutines.flow.Flow
 
 /**

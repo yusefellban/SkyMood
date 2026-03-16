@@ -4,8 +4,8 @@ import android.Manifest
 import android.util.Log
 import androidx.annotation.RequiresPermission
 import com.google.gson.Gson
-import iti.yousef.skymood.data.local.FavoriteLocationEntity
-import iti.yousef.skymood.data.local.ForecastEntity
+import iti.yousef.skymood.data.model.FavoriteLocationEntity
+import iti.yousef.skymood.data.model.ForecastEntity
 import iti.yousef.skymood.data.local.WeatherDao
 import iti.yousef.skymood.data.utils.NetworkHandler
 import kotlinx.coroutines.flow.Flow

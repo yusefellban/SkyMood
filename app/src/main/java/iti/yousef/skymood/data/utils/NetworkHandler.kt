@@ -12,9 +12,6 @@ interface NetworkHandler {
     fun isNetworkAvailable(): Boolean
 }
 
-/**
- * Real implementation of NetworkHandler using Android's ConnectivityManager.
- */
 class AndroidNetworkHandler(private val context: Context) : NetworkHandler {
     override fun isNetworkAvailable(): Boolean {
         val connectivityManager =

@@ -4,9 +4,8 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import iti.yousef.skymood.SkyMood
-import iti.yousef.skymood.data.local.AlertEntity
-import iti.yousef.skymood.data.local.AlertType
-import iti.yousef.skymood.data.work.AlarmScheduler
+import iti.yousef.skymood.data.model.Entity.AlertEntity
+import iti.yousef.skymood.data.model.Entity.AlertType
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn

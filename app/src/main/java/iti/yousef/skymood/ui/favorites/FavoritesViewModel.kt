@@ -4,7 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import iti.yousef.skymood.SkyMood
-import iti.yousef.skymood.data.local.FavoriteLocationEntity
+import iti.yousef.skymood.data.model.FavoriteLocationEntity
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn

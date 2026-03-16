@@ -3,10 +3,9 @@ package iti.yousef.skymood.ui.favorites
 import app.cash.turbine.test
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.verify
 import io.mockk.coVerify
 import iti.yousef.skymood.SkyMood
-import iti.yousef.skymood.data.local.FavoriteLocationEntity
+import iti.yousef.skymood.data.model.FavoriteLocationEntity
 import iti.yousef.skymood.data.repository.WeatherRepository
 import iti.yousef.skymood.rules.MainDispatcherRule
 import kotlinx.coroutines.flow.flowOf

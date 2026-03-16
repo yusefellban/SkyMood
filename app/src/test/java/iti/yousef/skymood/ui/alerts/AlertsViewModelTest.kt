@@ -5,8 +5,8 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import iti.yousef.skymood.SkyMood
-import iti.yousef.skymood.data.local.AlertEntity
-import iti.yousef.skymood.data.local.AlertType
+import iti.yousef.skymood.data.model.Entity.AlertEntity
+import iti.yousef.skymood.data.model.Entity.AlertType
 import iti.yousef.skymood.data.repository.AlertsRepository
 import iti.yousef.skymood.rules.MainDispatcherRule
 import kotlinx.coroutines.flow.flowOf

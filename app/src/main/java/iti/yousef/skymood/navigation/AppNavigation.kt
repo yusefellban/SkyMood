@@ -1,7 +1,5 @@
 package iti.yousef.skymood.navigation
 
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -15,7 +13,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import iti.yousef.skymood.data.repository.SettingsRepository
-import iti.yousef.skymood.data.settings.LocationMethod
+import iti.yousef.skymood.data.local.settings.LocationMethod
 import iti.yousef.skymood.ui.alerts.AlertsScreen
 import iti.yousef.skymood.ui.favorites.FavoritesScreen
 import iti.yousef.skymood.ui.home.HomeScreen

@@ -1,7 +1,7 @@
 package iti.yousef.skymood.data.repository
 
 import io.mockk.*
-import iti.yousef.skymood.data.local.ForecastEntity
+import iti.yousef.skymood.data.model.ForecastEntity
 import iti.yousef.skymood.data.local.WeatherDao
 import iti.yousef.skymood.data.model.*
 import iti.yousef.skymood.data.remote.WeatherRemoteDataSource
@@ -15,8 +15,7 @@ import org.junit.Before
 import org.junit.Test
 import android.util.Log
 import app.cash.turbine.test
-import iti.yousef.skymood.data.local.FavoriteLocationEntity
-import kotlinx.coroutines.flow.flowOf
+import iti.yousef.skymood.data.model.FavoriteLocationEntity
 
 class WeatherRepositoryTest {
 

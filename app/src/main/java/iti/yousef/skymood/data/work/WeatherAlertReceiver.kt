@@ -7,7 +7,6 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.location.Location
 import android.media.RingtoneManager
 import android.os.Build
 import androidx.core.app.NotificationCompat
@@ -15,8 +14,8 @@ import androidx.core.content.ContextCompat
 import iti.yousef.skymood.MainActivity
 import iti.yousef.skymood.R
 import iti.yousef.skymood.SkyMood
-import iti.yousef.skymood.data.local.AlertType
-import iti.yousef.skymood.data.settings.LocationMethod
+import iti.yousef.skymood.data.model.Entity.AlertType
+import iti.yousef.skymood.data.local.settings.LocationMethod
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
