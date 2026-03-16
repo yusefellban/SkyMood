@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.SkyMood" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.SkyMood" parent="android:Theme.Material.Light.NoActionBar" >
+    </style>
+
+    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/splash_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@android:color/transparent</item>
+        <item name="postSplashScreenTheme">@style/Theme.SkyMood</item>
+    </style>
 </resources>
