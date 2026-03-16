@@ -39,11 +39,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import iti.yousef.skymood.data.model.Entity.AlertEntity
 import iti.yousef.skymood.data.model.Entity.AlertType
 import iti.yousef.skymood.data.model.UiEvent
+import iti.yousef.skymood.ui.components.*
 import java.text.SimpleDateFormat
 import java.util.*
 
-val SkyBlue = Color(0xFF1A73E8)
-val DeepNavy = Color(0xFF0D1B2A)
+// Keep local colors that are specific to alerts
 val CardBackground = Color(0xFF1E2D3D)
 val AccentPurple = Color(0xFF7C4DFF)
 val AccentOrange = Color(0xFFFF6B35)
@@ -90,29 +90,26 @@ fun AlertsScreen(
         }
     }
 
-    val gradientBackground = Brush.verticalGradient(
-        colors = listOf(DeepNavy, Color(0xFF1A2640), Color(0xFF0D1B2A))
-    )
-
-    Scaffold(
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-        containerColor = Color.Transparent
-    ) { padding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(gradientBackground)
-        ) {
-            // Decorative floating orbs
-            FloatingOrbs()
-
+    PremiumBackground {
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+            containerColor = Color.Transparent,
+            floatingActionButton = {
+                PulsatingFab(onClick = { showAddDialog = true })
+            }
+        ) { padding ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding)
             ) {
                 // Header
-                AlertsHeader(onNavigateBack = onNavigateBack)
+                PremiumHeader(
+                    title = "Weather Alerts",
+                    subtitle = "Stay ahead of the weather",
+                    onNavigateBack = onNavigateBack
+                )
 
                 // Stats bar
                 AnimatedAlertStats(alerts = alerts)
@@ -136,15 +133,6 @@ fun AlertsScreen(
                         item { Spacer(modifier = Modifier.height(80.dp)) }
                     }
                 }
-            }
-
-            // FAB
-            Box(
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(24.dp)
-            ) {
-                PulsatingFab(onClick = { showAddDialog = true })
             }
         }
     }
@@ -191,68 +179,6 @@ fun AlertsScreen(
     }
 }
 
-@Composable
-private fun FloatingOrbs() {
-    val infiniteTransition = rememberInfiniteTransition(label = "orbs")
-    val offsetY by infiniteTransition.animateFloat(
-        initialValue = 0f, targetValue = 30f, label = "orb_y",
-        animationSpec = infiniteRepeatable(tween(3000, easing = EaseInOutSine), RepeatMode.Reverse)
-    )
-    Box(modifier = Modifier.fillMaxSize()) {
-        Box(
-            modifier = Modifier
-                .offset((-40).dp, (20 + offsetY).dp)
-                .size(160.dp)
-                .background(SkyBlue.copy(alpha = 0.08f), CircleShape)
-        )
-        Box(
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .offset(40.dp, (80 - offsetY).dp)
-                .size(200.dp)
-                .background(AccentPurple.copy(alpha = 0.06f), CircleShape)
-        )
-        Box(
-            modifier = Modifier
-                .align(Alignment.BottomStart)
-                .offset((-30).dp, (-60 + offsetY).dp)
-                .size(140.dp)
-                .background(AccentOrange.copy(alpha = 0.07f), CircleShape)
-        )
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun AlertsHeader(onNavigateBack: () -> Unit) {
-    TopAppBar(
-        title = {
-            Column {
-                Text(
-                    text = "Weather Alerts",
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 22.sp
-                )
-                Text(
-                    text = "Stay ahead of the weather",
-                    color = Color.White.copy(alpha = 0.6f),
-                    fontSize = 12.sp
-                )
-            }
-        },
-        navigationIcon = {
-            IconButton(onClick = onNavigateBack) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back",
-                    tint = Color.White
-                )
-            }
-        },
-        colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
-    )
-}
 
 @Composable
 private fun AnimatedAlertStats(alerts: List<AlertEntity>) {
@@ -265,35 +191,26 @@ private fun AnimatedAlertStats(alerts: List<AlertEntity>) {
             .padding(horizontal = 16.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        StatChip(icon = Icons.Default.Notifications, label = "Total", value = "$total", color = SkyBlue)
-        StatChip(icon = Icons.Default.CheckCircle, label = "Active", value = "$active", color = AlertGreen)
-        StatChip(icon = Icons.Default.Warning, label = "Paused", value = "${total - active}", color = AccentOrange)
+        StatChipItem(icon = Icons.Default.Notifications, label = "Total", value = "$total", color = SkyBlue)
+        StatChipItem(icon = Icons.Default.CheckCircle, label = "Active", value = "$active", color = AlertGreen)
+        StatChipItem(icon = Icons.Default.Warning, label = "Paused", value = "${total - active}", color = AccentOrange)
     }
 }
 
 @Composable
-private fun RowScope.StatChip(
+private fun RowScope.StatChipItem(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     label: String,
     value: String,
     color: Color
 ) {
-    Box(
-        modifier = Modifier
-            .weight(1f)
-            .clip(RoundedCornerShape(12.dp))
-            .background(CardBackground.copy(alpha = 0.8f))
-            .border(1.dp, color.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
-            .padding(vertical = 10.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Icon(imageVector = icon, contentDescription = null, tint = color, modifier = Modifier.size(18.dp))
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(text = value, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-            Text(text = label, color = Color.White.copy(alpha = 0.5f), fontSize = 11.sp)
-        }
-    }
+    StatChip(
+        icon = icon,
+        label = label,
+        value = value,
+        color = color,
+        modifier = Modifier.weight(1f)
+    )
 }
 
 @Composable

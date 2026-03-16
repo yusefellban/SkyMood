@@ -24,13 +24,24 @@ import kotlinx.coroutines.launch
 class WeatherAlertReceiver : BroadcastReceiver() {
 
     companion object {
-        const val CHANNEL_ID = "skymood_alerts"
+        const val NOTIF_CHANNEL_ID = "skymood_notifications"
+        const val ALARM_CHANNEL_ID = "skymood_alarms"
+        const val ACTION_DISMISS_ALARM = "iti.yousef.skymood.ACTION_DISMISS_ALARM"
         const val ALERT_ID_KEY = "alert_id"
         const val ALERT_LABEL_KEY = "alert_label"
         const val ALERT_TYPE_KEY = "alert_type"
     }
 
     override fun onReceive(context: Context, intent: Intent) {
+        if (intent.action == ACTION_DISMISS_ALARM) {
+            val alertId = intent.getIntExtra(ALERT_ID_KEY, -1)
+            if (alertId != -1) {
+                val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                notificationManager.cancel(alertId)
+            }
+            return
+        }
+
         // Reschedule alarms after device reboot
         if (intent.action == Intent.ACTION_BOOT_COMPLETED) {
             val app = context.applicationContext as SkyMood
@@ -118,17 +129,17 @@ class WeatherAlertReceiver : BroadcastReceiver() {
                 // Show Notification
                 val notifId = if (alertId > 0) alertId else System.currentTimeMillis().toInt()
 
-                val notificationManager =
-                    context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-
+                val channelId = if (alertType == AlertType.ALARM) ALARM_CHANNEL_ID else NOTIF_CHANNEL_ID
+                val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
                 val importance = if (alertType == AlertType.ALARM)
                     NotificationManager.IMPORTANCE_HIGH
                 else
                     NotificationManager.IMPORTANCE_DEFAULT
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    val channel = NotificationChannel(CHANNEL_ID, "SkyMood Weather Alerts", importance).apply {
-                        description = "Active weather alerts"
+                    val channelName = if (alertType == AlertType.ALARM) "Weather Alarms" else "Weather Notifications"
+                    val channel = NotificationChannel(channelId, channelName, importance).apply {
+                        description = if (alertType == AlertType.ALARM) "Active weather alarms" else "Regular weather notifications"
                         if (alertType == AlertType.ALARM) {
                             val alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
                             setSound(alarmSound, audioAttributes)
@@ -150,18 +161,36 @@ class WeatherAlertReceiver : BroadcastReceiver() {
                 }
                 val pendingIntent = PendingIntent.getActivity(context, notifId, tapIntent, flags)
 
-                val notificationBuilder = NotificationCompat.Builder(context, CHANNEL_ID)
+                val notificationBuilder = NotificationCompat.Builder(context, channelId)
                     .setSmallIcon(R.mipmap.ic_launcher_round)
                     .setContentTitle("☁️ SkyMood: $alertLabel")
                     .setContentText(weatherText)
-                    .setAutoCancel(true)
+                    .setAutoCancel(alertType != AlertType.ALARM)
                     .setContentIntent(pendingIntent)
                     .setPriority(
                         if (alertType == AlertType.ALARM) NotificationCompat.PRIORITY_MAX
                         else NotificationCompat.PRIORITY_DEFAULT
                     )
+                    .setCategory(if (alertType == AlertType.ALARM) NotificationCompat.CATEGORY_ALARM else NotificationCompat.CATEGORY_EVENT)
+
+                if (alertType == AlertType.ALARM) {
+                    val dismissIntent = Intent(context, WeatherAlertReceiver::class.java).apply {
+                        action = ACTION_DISMISS_ALARM
+                        putExtra(ALERT_ID_KEY, notifId)
+                    }
+                    val dismissPendingIntent = PendingIntent.getBroadcast(
+                        context, 
+                        notifId + 100, 
+                        dismissIntent, 
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE else PendingIntent.FLAG_UPDATE_CURRENT
+                    )
+                    notificationBuilder.addAction(android.R.drawable.ic_menu_close_clear_cancel, "Dismiss", dismissPendingIntent)
+                    notificationBuilder.setOngoing(true)
+                }
 
                 notificationManager.notify(notifId, notificationBuilder.build())
+                
+                // If it's an alarm, it will keep making sound until dismissed thanks to high importance channel + ongoing flag
             } finally {
                 pendingResult.finish()
             }

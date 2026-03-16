@@ -1,9 +1,11 @@
 package iti.yousef.skymood.ui.settings
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -19,6 +21,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -28,6 +31,7 @@ import iti.yousef.skymood.data.local.settings.Language
 import iti.yousef.skymood.data.local.settings.LocationMethod
 import iti.yousef.skymood.data.local.settings.TempUnit
 import iti.yousef.skymood.data.local.settings.WindUnit
+import iti.yousef.skymood.ui.components.*
 
 /**
  * Screen allowing users to configure application preferences.
@@ -41,126 +45,120 @@ fun SettingsScreen(
 ) {
     val settings by viewModel.settings.collectAsState()
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(androidx.compose.ui.res.stringResource(iti.yousef.skymood.R.string.settings)) },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    titleContentColor = MaterialTheme.colorScheme.onBackground
+    PremiumBackground {
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            containerColor = Color.Transparent,
+            topBar = {
+                PremiumHeader(
+                    title = stringResource(iti.yousef.skymood.R.string.settings),
+                    onNavigateBack = onNavigateBack
                 )
-            )
-        }
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
-                .padding(padding)
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
-        ) {
-            // Location Settings
-            SettingsSection(
-                title = androidx.compose.ui.res.stringResource(iti.yousef.skymood.R.string.location), 
-                icon = Icons.Default.LocationOn
+            }
+        ) { padding ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .verticalScroll(rememberScrollState())
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
-                val optionsStr = LocationMethod.entries.map { stringResource(it.titleResId) }
-                val selectedStr = androidx.compose.ui.res.stringResource(settings.locationMethod.titleResId)
-                SettingsOptionGroup(
-                    options = optionsStr,
-                    selectedOption = selectedStr,
-                    onOptionSelected = { displayStr ->
-                        val method = LocationMethod.entries.find { optionsStr[LocationMethod.entries.indexOf(it)] == displayStr }
-                        method?.let { 
-                            viewModel.updateLocationMethod(it) 
-                            if (it == LocationMethod.MAP && settings.customLat == null) {
-                                onNavigateToMap()
+                // Location Settings
+                SettingsSection(
+                    title = stringResource(iti.yousef.skymood.R.string.location),
+                    icon = Icons.Default.LocationOn
+                ) {
+                    val optionsStr = LocationMethod.entries.map { stringResource(it.titleResId) }
+                    val selectedStr = stringResource(settings.locationMethod.titleResId)
+                    SettingsOptionGroup(
+                        options = optionsStr,
+                        selectedOption = selectedStr,
+                        onOptionSelected = { displayStr ->
+                            val method = LocationMethod.entries.find { optionsStr[LocationMethod.entries.indexOf(it)] == displayStr }
+                            method?.let {
+                                viewModel.updateLocationMethod(it)
+                                if (it == LocationMethod.MAP && settings.customLat == null) {
+                                    onNavigateToMap()
+                                }
                             }
                         }
-                    }
-                )
-                
-                if (settings.locationMethod == LocationMethod.MAP) {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Button(
-                        onClick = onNavigateToMap, 
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(
-                            text = if (settings.customLat != null) 
-                                androidx.compose.ui.res.stringResource(iti.yousef.skymood.R.string.edit_location_map) 
-                            else 
-                                androidx.compose.ui.res.stringResource(iti.yousef.skymood.R.string.pick_location_map)
-                        )
+                    )
+
+                    if (settings.locationMethod == LocationMethod.MAP) {
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Button(
+                            onClick = onNavigateToMap,
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(containerColor = SkyBlue),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Text(
+                                text = if (settings.customLat != null)
+                                    stringResource(iti.yousef.skymood.R.string.edit_location_map)
+                                else
+                                    stringResource(iti.yousef.skymood.R.string.pick_location_map)
+                            )
+                        }
                     }
                 }
-            }
 
-            HorizontalDivider(color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f))
+                HorizontalDivider(color = Color.White.copy(alpha = 0.1f))
 
-            // Temperature Unit Settings
-            SettingsSection(
-                title = androidx.compose.ui.res.stringResource(iti.yousef.skymood.R.string.temperature_unit), 
-                icon = Icons.Default.Thermostat
-            ) {
-                val optionsStr = TempUnit.entries.map { stringResource(it.titleResId) }
-                val selectedStr = androidx.compose.ui.res.stringResource(settings.temperatureUnit.titleResId)
-                SettingsOptionGroup(
-                    options = optionsStr,
-                    selectedOption = selectedStr,
-                    onOptionSelected = { displayStr ->
-                        val unit = TempUnit.entries.find { optionsStr[TempUnit.entries.indexOf(it)] == displayStr }
-                        unit?.let { viewModel.updateTemperatureUnit(it) }
-                    }
-                )
-            }
+                // Temperature Unit Settings
+                SettingsSection(
+                    title = stringResource(iti.yousef.skymood.R.string.temperature_unit),
+                    icon = Icons.Default.Thermostat
+                ) {
+                    val optionsStr = TempUnit.entries.map { stringResource(it.titleResId) }
+                    val selectedStr = stringResource(settings.temperatureUnit.titleResId)
+                    SettingsOptionGroup(
+                        options = optionsStr,
+                        selectedOption = selectedStr,
+                        onOptionSelected = { displayStr ->
+                            val unit = TempUnit.entries.find { optionsStr[TempUnit.entries.indexOf(it)] == displayStr }
+                            unit?.let { viewModel.updateTemperatureUnit(it) }
+                        }
+                    )
+                }
 
-            HorizontalDivider(color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f))
+                HorizontalDivider(color = Color.White.copy(alpha = 0.1f))
 
-            // Wind Speed Settings
-            SettingsSection(
-                title = androidx.compose.ui.res.stringResource(iti.yousef.skymood.R.string.wind_speed_unit), 
-                icon = Icons.Default.Speed
-            ) {
-                val optionsStr = WindUnit.entries.map { stringResource(it.titleResId) }
-                val selectedStr = androidx.compose.ui.res.stringResource(settings.windSpeedUnit.titleResId)
-                SettingsOptionGroup(
-                    options = optionsStr,
-                    selectedOption = selectedStr,
-                    onOptionSelected = { displayStr ->
-                        val unit = WindUnit.entries.find { optionsStr[WindUnit.entries.indexOf(it)] == displayStr }
-                        unit?.let { viewModel.updateWindSpeedUnit(it) }
-                    }
-                )
-            }
+                // Wind Speed Settings
+                SettingsSection(
+                    title = stringResource(iti.yousef.skymood.R.string.wind_speed_unit),
+                    icon = Icons.Default.Speed
+                ) {
+                    val optionsStr = WindUnit.entries.map { stringResource(it.titleResId) }
+                    val selectedStr = stringResource(settings.windSpeedUnit.titleResId)
+                    SettingsOptionGroup(
+                        options = optionsStr,
+                        selectedOption = selectedStr,
+                        onOptionSelected = { displayStr ->
+                            val unit = WindUnit.entries.find { optionsStr[WindUnit.entries.indexOf(it)] == displayStr }
+                            unit?.let { viewModel.updateWindSpeedUnit(it) }
+                        }
+                    )
+                }
 
-            HorizontalDivider(color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f))
+                HorizontalDivider(color = Color.White.copy(alpha = 0.1f))
 
-            // Language Settings
-            SettingsSection(
-                title = androidx.compose.ui.res.stringResource(iti.yousef.skymood.R.string.language), 
-                icon = Icons.Default.Language
-            ) {
-                val optionsStr = Language.entries.map { stringResource(it.titleResId) }
-                val selectedStr = androidx.compose.ui.res.stringResource(settings.language.titleResId)
-                SettingsOptionGroup(
-                    options = optionsStr,
-                    selectedOption = selectedStr,
-                    onOptionSelected = { displayStr ->
-                        val lang = Language.entries.find { optionsStr[Language.entries.indexOf(it)] == displayStr }
-                        lang?.let { viewModel.updateLanguage(it) }
-                    }
-                )
+                // Language Settings
+                SettingsSection(
+                    title = stringResource(iti.yousef.skymood.R.string.language),
+                    icon = Icons.Default.Language
+                ) {
+                    val optionsStr = Language.entries.map { stringResource(it.titleResId) }
+                    val selectedStr = stringResource(settings.language.titleResId)
+                    SettingsOptionGroup(
+                        options = optionsStr,
+                        selectedOption = selectedStr,
+                        onOptionSelected = { displayStr ->
+                            val lang = Language.entries.find { optionsStr[Language.entries.indexOf(it)] == displayStr }
+                            lang?.let { viewModel.updateLanguage(it) }
+                        }
+                    )
+                }
             }
         }
     }
@@ -180,17 +178,24 @@ private fun SettingsSection(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(24.dp)
-            )
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .background(SkyBlue.copy(alpha = 0.2f), CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = SkyBlue,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
+                color = Color.White
             )
         }
         content()
@@ -232,20 +237,22 @@ private fun SettingsOptionPill(
     onClick: () -> Unit
 ) {
     val backgroundColor = if (isSelected) {
-        MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+        SkyBlue.copy(alpha = 0.25f)
     } else {
-        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
+        CardBackground.copy(alpha = 0.4f)
     }
     val contentColor = if (isSelected) {
-        MaterialTheme.colorScheme.primary
+        SkyBlue
     } else {
-        MaterialTheme.colorScheme.onSurfaceVariant
+        Color.White.copy(alpha = 0.6f)
     }
+    val borderColor = if (isSelected) SkyBlue else Color.White.copy(alpha = 0.1f)
 
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(16.dp))
             .background(backgroundColor)
+            .border(1.dp, borderColor, RoundedCornerShape(16.dp))
             .clickable(onClick = onClick)
             .padding(vertical = 12.dp),
         contentAlignment = Alignment.Center
