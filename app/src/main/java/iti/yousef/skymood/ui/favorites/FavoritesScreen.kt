@@ -12,6 +12,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -24,6 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import iti.yousef.skymood.data.model.FavoriteLocationEntity
+import iti.yousef.skymood.data.model.UiEvent
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -34,8 +36,20 @@ fun FavoritesScreen(
 ) {
     val favorites by viewModel.favorites.collectAsState()
     var favoriteToDelete by remember { mutableStateOf<FavoriteLocationEntity?>(null) }
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(Unit) {
+        viewModel.events.collect { event ->
+            when (event) {
+                is UiEvent.ShowSnackbar -> {
+                    snackbarHostState.showSnackbar(event.message)
+                }
+            }
+        }
+    }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text(androidx.compose.ui.res.stringResource(iti.yousef.skymood.R.string.favorites)) },

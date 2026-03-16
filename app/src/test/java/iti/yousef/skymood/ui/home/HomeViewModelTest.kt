@@ -12,6 +12,7 @@ import iti.yousef.skymood.SkyMood
 import iti.yousef.skymood.data.model.City
 import iti.yousef.skymood.data.model.Coord
 import iti.yousef.skymood.data.model.ForecastResponse
+import iti.yousef.skymood.data.model.UiEvent
 import iti.yousef.skymood.data.model.WeatherUiState
 import iti.yousef.skymood.data.repository.LocationRepository
 import iti.yousef.skymood.data.repository.SettingsRepository
@@ -134,23 +135,24 @@ class HomeViewModelTest {
         every { settingsRepository.settingsFlow } returns flowOf(prefs)
         every { weatherRepository.getAllFavorites() } returns flowOf(emptyList())
 
-        // Location returns null
+        // Location returns null and Cache returns null
         coEvery { locationRepository.getCurrentLocation() } returns null
-
+        coEvery { weatherRepository.getLatestCachedForecast() } returns null
+        
         // Act
         viewModel = HomeViewModel(app)
 
         // Assert
         viewModel.weatherState.test {
-            val result = awaitItem()
-            if (result is WeatherUiState.Loading) {
-                val errorState = awaitItem()
-                assertTrue(errorState is WeatherUiState.Error)
-                assertEquals("Unable to get your location. Please enable GPS and try again.", (errorState as WeatherUiState.Error).message)
-            } else {
-                assertTrue(result is WeatherUiState.Error)
-                assertEquals("Unable to get your location. Please enable GPS and try again.", (result as WeatherUiState.Error).message)
-            }
+            val initialState = awaitItem()
+            // In runTest, the init block might have already completed the fetch
+            val finalState = if (initialState is WeatherUiState.Loading) awaitItem() else initialState
+            
+            assertTrue("Expected Error state but got $finalState", finalState is WeatherUiState.Error)
+            assertEquals(
+                "Unable to get your location. Please enable GPS and try again.",
+                (finalState as WeatherUiState.Error).message
+            )
             cancelAndIgnoreRemainingEvents()
         }
     }
@@ -191,6 +193,31 @@ class HomeViewModelTest {
             weatherRepository.insertFavorite(
                 match { it.cityName == "Cairo" && it.latitude == 30.0 && it.longitude == 31.0 }
             ) 
+        }
+    }
+
+    @Test
+    fun `toggleFavorite emits Snackbar event`() = runTest {
+        // Arrange
+        val prefs = SettingsPreferences(locationMethod = LocationMethod.MAP, customLat = 30.0, customLon = 31.0)
+        every { settingsRepository.settingsFlow } returns flowOf(prefs)
+        every { weatherRepository.getAllFavorites() } returns flowOf(emptyList())
+
+        val mockResponse = ForecastResponse(
+            cod = "200", message = 0, count = 0, list = emptyList(), 
+            city = City(1, "Cairo", Coord(30.0, 31.0), "EG", 1, 1, 1, 1)
+        )
+        every { weatherRepository.getForecast(any(), any(), any(), any()) } returns flowOf(mockResponse)
+
+        viewModel = HomeViewModel(app)
+
+        // Act & Assert
+        viewModel.events.test {
+            viewModel.toggleFavorite()
+            val event = awaitItem()
+            assertTrue(event is UiEvent.ShowSnackbar)
+            assertEquals("Cairo added to favorites", (event as UiEvent.ShowSnackbar).message)
+            cancelAndIgnoreRemainingEvents()
         }
     }
 }

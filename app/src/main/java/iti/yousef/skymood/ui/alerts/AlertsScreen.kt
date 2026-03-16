@@ -38,6 +38,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import iti.yousef.skymood.data.model.Entity.AlertEntity
 import iti.yousef.skymood.data.model.Entity.AlertType
+import iti.yousef.skymood.data.model.UiEvent
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -59,6 +60,17 @@ fun AlertsScreen(
     var showAddDialog by remember { mutableStateOf(false) }
     var alertToDelete by remember { mutableStateOf<AlertEntity?>(null) }
     val context = LocalContext.current
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(Unit) {
+        viewModel.events.collect { event ->
+            when (event) {
+                is UiEvent.ShowSnackbar -> {
+                    snackbarHostState.showSnackbar(event.message)
+                }
+            }
+        }
+    }
 
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
@@ -82,49 +94,58 @@ fun AlertsScreen(
         colors = listOf(DeepNavy, Color(0xFF1A2640), Color(0xFF0D1B2A))
     )
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(gradientBackground)
-    ) {
-        // Decorative floating orbs
-        FloatingOrbs()
-
-        Column(modifier = Modifier.fillMaxSize()) {
-            // Header
-            AlertsHeader(onNavigateBack = onNavigateBack)
-
-            // Stats bar
-            AnimatedAlertStats(alerts = alerts)
-
-            // Content
-            if (alerts.isEmpty()) {
-                EmptyAlertsPlaceholder(onAddClick = { showAddDialog = true })
-            } else {
-                LazyColumn(
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.weight(1f)
-                ) {
-                    items(alerts, key = { it.id }) { alert ->
-                        AlertCard(
-                            alert = alert,
-                            onToggle = { viewModel.toggleAlert(alert) },
-                            onDelete = { alertToDelete = alert }
-                        )
-                    }
-                    item { Spacer(modifier = Modifier.height(80.dp)) }
-                }
-            }
-        }
-
-        // FAB
+    Scaffold(
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+        containerColor = Color.Transparent
+    ) { padding ->
         Box(
             modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(24.dp)
+                .fillMaxSize()
+                .background(gradientBackground)
         ) {
-            PulsatingFab(onClick = { showAddDialog = true })
+            // Decorative floating orbs
+            FloatingOrbs()
+
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+            ) {
+                // Header
+                AlertsHeader(onNavigateBack = onNavigateBack)
+
+                // Stats bar
+                AnimatedAlertStats(alerts = alerts)
+
+                // Content
+                if (alerts.isEmpty()) {
+                    EmptyAlertsPlaceholder(onAddClick = { showAddDialog = true })
+                } else {
+                    LazyColumn(
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        items(alerts, key = { it.id }) { alert ->
+                            AlertCard(
+                                alert = alert,
+                                onToggle = { viewModel.toggleAlert(alert) },
+                                onDelete = { alertToDelete = alert }
+                            )
+                        }
+                        item { Spacer(modifier = Modifier.height(80.dp)) }
+                    }
+                }
+            }
+
+            // FAB
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(24.dp)
+            ) {
+                PulsatingFab(onClick = { showAddDialog = true })
+            }
         }
     }
 

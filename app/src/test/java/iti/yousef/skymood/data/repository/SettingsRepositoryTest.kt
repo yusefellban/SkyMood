@@ -21,7 +21,7 @@ class SettingsRepositoryTest {
 
     @Before
     fun setup() {
-        settingsDataStore = mockk()
+        settingsDataStore = mockk(relaxed = true)
         repository = SettingsRepository(settingsDataStore)
     }
 

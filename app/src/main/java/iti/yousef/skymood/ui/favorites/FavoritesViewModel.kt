@@ -5,8 +5,12 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import iti.yousef.skymood.SkyMood
 import iti.yousef.skymood.data.model.FavoriteLocationEntity
+import iti.yousef.skymood.data.model.UiEvent
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -27,9 +31,14 @@ class FavoritesViewModel(application: Application) : AndroidViewModel(applicatio
             initialValue = emptyList()
         )
 
+    private val _events = MutableSharedFlow<UiEvent>(extraBufferCapacity = 1)
+    /** One-time UI events like snackbars or navigation */
+    val events: SharedFlow<UiEvent> = _events.asSharedFlow()
+
     fun deleteFavorite(favorite: FavoriteLocationEntity) {
         viewModelScope.launch {
             weatherRepository.deleteFavorite(favorite)
+            _events.emit(UiEvent.ShowSnackbar("${favorite.cityName} removed from favorites"))
         }
     }
 }

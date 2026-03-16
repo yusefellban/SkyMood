@@ -42,6 +42,9 @@ import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -68,6 +71,7 @@ import coil3.request.crossfade
 import iti.yousef.skymood.data.model.ForecastItem
 import iti.yousef.skymood.data.model.ForecastResponse
 import iti.yousef.skymood.data.model.WeatherUiState
+import iti.yousef.skymood.data.model.UiEvent
 import iti.yousef.skymood.data.local.settings.SettingsPreferences
 import iti.yousef.skymood.data.local.settings.WindUnit
 import java.text.SimpleDateFormat
@@ -92,24 +96,45 @@ fun HomeScreen(
     val settings by viewModel.settings.collectAsState()
     val isFavorite by viewModel.isFavorite.collectAsState()
 
+    val snackbarHostState = remember { SnackbarHostState() }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        when (val state = weatherState) {
-            is WeatherUiState.Loading -> LoadingView()
-            is WeatherUiState.Error -> ErrorView(
-                message = state.message,
-                onRetry = { viewModel.fetchWeather() }
-            )
-            is WeatherUiState.Success -> WeatherContent(
-                data = state.data,
-                settings = settings,
-                isFavorite = isFavorite,
-                onRefresh = { viewModel.fetchWeather() },
-                onNavigateToSettings = onNavigateToSettings,
-                onNavigateToFavorites = onNavigateToFavorites,
-                onNavigateToAlerts = onNavigateToAlerts,
-                onToggleFavorite = { viewModel.toggleFavorite() }
-            )
+    LaunchedEffect(Unit) {
+        viewModel.events.collect { event ->
+            when (event) {
+                is UiEvent.ShowSnackbar -> {
+                    snackbarHostState.showSnackbar(event.message)
+                }
+            }
+        }
+    }
+
+    Scaffold(
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+        containerColor = Color.Transparent
+    ) { padding ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+        ) {
+            when (val state = weatherState) {
+                is WeatherUiState.Loading -> LoadingView(scaffoldPadding = padding)
+                is WeatherUiState.Error -> ErrorView(
+                    message = state.message,
+                    scaffoldPadding = padding,
+                    onRetry = { viewModel.fetchWeather() }
+                )
+                is WeatherUiState.Success -> WeatherContent(
+                    data = state.data,
+                    settings = settings,
+                    isFavorite = isFavorite,
+                    scaffoldPadding = padding,
+                    onRefresh = { viewModel.fetchWeather() },
+                    onNavigateToSettings = onNavigateToSettings,
+                    onNavigateToFavorites = onNavigateToFavorites,
+                    onNavigateToAlerts = onNavigateToAlerts,
+                    onToggleFavorite = { viewModel.toggleFavorite() }
+                )
+            }
         }
     }
 }
@@ -119,7 +144,7 @@ fun HomeScreen(
  */
 @Composable
 @Preview
-private fun LoadingView() {
+private fun LoadingView(scaffoldPadding: PaddingValues) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -130,7 +155,10 @@ private fun LoadingView() {
             ),
         contentAlignment = Alignment.Center
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(scaffoldPadding)
+        ) {
             CircularProgressIndicator(
                 color = Color.White,
                 strokeWidth = 3.dp,
@@ -150,7 +178,11 @@ private fun LoadingView() {
  * Error state: shows the error message with a retry button.
  */
 @Composable
-private fun ErrorView(message: String, onRetry: () -> Unit) {
+private fun ErrorView(
+    message: String,
+    scaffoldPadding: PaddingValues,
+    onRetry: () -> Unit
+) {
     var locationGranted by remember { mutableStateOf(false) }
 
     // Permission launcher
@@ -176,7 +208,7 @@ private fun ErrorView(message: String, onRetry: () -> Unit) {
 
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(32.dp)
+            modifier = Modifier.padding(scaffoldPadding).padding(32.dp)
         ) {
             //TODO : cheek premetion if not ask
             Text(
@@ -233,6 +265,7 @@ private fun WeatherContent(
     data: ForecastResponse,
     settings: SettingsPreferences,
     isFavorite: Boolean,
+    scaffoldPadding: PaddingValues,
     onRefresh: () -> Unit,
     onNavigateToSettings: () -> Unit,
     onNavigateToFavorites: () -> Unit,
@@ -258,7 +291,10 @@ private fun WeatherContent(
         // Scrollable content on top of the animation
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(bottom = 32.dp)
+            contentPadding = PaddingValues(
+                top = scaffoldPadding.calculateTopPadding(),
+                bottom = scaffoldPadding.calculateBottomPadding() + 32.dp
+            )
         ) {
             // Top section: City, temperature, description
             item {
@@ -343,7 +379,7 @@ private fun CurrentWeatherHeader(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 60.dp, start = 24.dp, end = 24.dp, bottom = 8.dp),
+            .padding(start = 24.dp, end = 24.dp, bottom = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Top action buttons (Settings and Refresh)
