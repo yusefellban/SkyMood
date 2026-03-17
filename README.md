@@ -6,7 +6,7 @@ SkyMood is a premium, feature-rich weather forecast application built with moder
 
 ## ✨ Key Features
 
-![Features Illustration](docs/images/skymood_features_illustration_1773550246213.png)
+![Features Illustration](docs/images/Cover.png)
 
 - **Real-time Forecast**: Instant weather updates for your current GPS location or any custom location selected via map.
 - **5-Day / 3-Hour Forecast**: Detailed weather breakdowns including temperature, humidity, wind speed, and atmospheric conditions.
