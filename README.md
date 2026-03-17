@@ -1,7 +1,5 @@
 # 🌤️ SkyMood - Advanced Weather Companion
 
-![App Mockup](docs/images/skymood_app_mockup_1773550231746.png)
-
 SkyMood is a premium, feature-rich weather forecast application built with modern Android development practices. It provides real-time weather data, accurate 5-day forecasts, and highly customizable weather alerts to keep you informed and prepared.
 
 ## ✨ Key Features
